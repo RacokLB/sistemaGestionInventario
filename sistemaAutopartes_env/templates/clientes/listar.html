@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Listado de Clientes{% endblock %}
+
+{% block content %}
+    <h2>Listado de Clientes</h2>
+    <a href="{{ url_for('crear_cliente') }}" class="btn btn-primary mb-3">Nuevo Cliente</a>
+
+    {% if clientes %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Cedula o Rif</th>
+                <th>Direccion</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.id }}</td>
+                <td>{{ cliente.nombre }}</td>
+                <td>{{ cliente.apellido }}</td>
+                <td>{{ cliente.cedula_rif }}</td>
+                <td>{{ cliente.direccion }}</td>
+                <td>{{ cliente.telefono }}</td>
+                <td>{{ cliente.email }}</td>
+                <td>
+                    <a href="{{ url_for('editar_cliente', id=cliente.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                    {# Añadir un botón de eliminar que posiblemente use un modal o JS para confirmar #}
+                    <a href="{{ url_for('eliminar_cliente', id=cliente.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que quieres eliminar este cliente?');">Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No hay clientes registrados aún.</p>
+    {% endif %}
+{% endblock %}

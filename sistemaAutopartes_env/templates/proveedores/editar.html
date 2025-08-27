@@ -1,0 +1,50 @@
+    {% extends 'base.html' %}
+
+{% block title %}Editar Proveedor{% endblock %}
+
+{% block content %}
+    <h2>Editar Proveedor: {{ proveedor.nombre }}</h2>
+    <form method="POST" action="{{ url_for('editar_proveedor', id=proveedor.id) }}">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            {{ form.nombre.label(class="form-label") }}
+            {{ form.nombre(class="form-control") }}
+            {% if form.nombre.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.nombre.errors %}{{ error }}{% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {{form.rif.label(class="form-label")}}
+            {{form.rif(class="form-control")}}
+            {% if form.rif.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.rif.errors %}{{ error }}{% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {{ form.telefono.label(class="form-label") }}
+            {{ form.telefono(class="form-control") }}
+            {% if form.telefono.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.telefono.errors %}{{ error }}{% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control") }}
+            {% if form.email.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.email.errors %}{{ error }}{% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('listar_proveedores') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+{% endblock %}

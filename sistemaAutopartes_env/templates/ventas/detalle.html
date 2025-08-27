@@ -1,0 +1,61 @@
+{# templates/ventas/detalle.html #}
+
+{% extends 'base.html' %}
+
+{% block title %}Detalle de Venta (Nota de Entrega){% endblock %}
+
+{% block content %}
+    <style>
+        p{
+            font-family:'Google Sans';
+            color:#cec09b;  
+        }
+        h2{
+            color:#fff6e0;
+            font-family:'Google Sans';
+        }
+    </style>
+    
+    <h2 class="display-5">Detalle de Venta (Nota de Entrega) #{{ venta.numero_nota_entrega }}</h2> {# Usa numero_nota_entrega como ya lo tienes #}
+    <p><strong>Cliente:</strong> {{ venta.cliente.nombre }} {{ venta.cliente.apellido }} ({{ venta.cliente.cedula_rif }})</p>
+    <p><strong>Fecha de Venta:</strong> {{ venta.fecha_venta.strftime('%d/%m/%Y %H:%M') }}</p>
+
+    <hr> {# Separador visual #}
+
+    <h3>Información de Moneda y Total</h3>
+    <p><strong>Moneda de Venta (Inicial):</strong> {{ venta.moneda_total_divisa }}</p>
+    <p><strong>Tasa de Cambio BCV Aplicada:</strong> Bs. {{ "%.4f" % venta.tasa_cambio_aplicada }} por 1 {{ venta.moneda_total_divisa }}</p>
+    <p><strong>Total de Venta en Divisa:</strong> {{ "%.2f" % venta.total_venta_divisa }} {{ venta.moneda_total_divisa }}</p>
+    <p><strong>Total de Venta en Bolívar (Bs.):</strong> Bs. {{ "%.2f" % venta.total_venta_bs }}</p>
+
+    <hr> {# Separador visual #}
+
+    <h3>Productos Vendidos</h3>
+    {% if venta.detalles %}
+    <table class="table table-bordered table-sm"> {# Añadimos table-sm para un tamaño más compacto #}
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Venta Unitario (en divisa)</th> {# Ajustado para reflejar que el precio unitario está en divisa #}
+                <th>Subtotal (en divisa)</th> {# Ajustado para reflejar que el subtotal es en divisa #}
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in venta.detalles %}
+            <tr>
+                {# Asegúrate de que detalle.producto_id.descripcion sea correcto. Si producto_id es la FK, necesitas acceder al objeto Producto real: detalle.producto.descripcion #}
+                <td>{{ detalle.detalle_ventas.descripcion }}</td> 
+                <td>{{ detalle.cantidad }}</td>
+                <td>{{ "%.2f" % detalle.precio_venta_unitario }} {{ venta.moneda_total_divisa }}</td> {# Muestra el precio unitario en la divisa original #}
+                <td>{{ "%.2f" % (detalle.cantidad * detalle.precio_venta_unitario) }} {{ venta.moneda_total_divisa }}</td> {# Muestra el subtotal en la divisa original #}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No se encontraron detalles de productos para esta venta.</p>
+    {% endif %}
+
+    <a href="{{ url_for('listar_ventas') }}" class="btn btn-secondary">Volver al Listado de Ventas</a>
+{% endblock %}

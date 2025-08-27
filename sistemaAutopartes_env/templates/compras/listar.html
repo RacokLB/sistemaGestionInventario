@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Listado de Compras{% endblock %}
+
+{% block content %}
+    <h2>Listado de Compras</h2>
+    <a href="{{ url_for('crear_compra') }}" class="btn btn-primary mb-3">Nueva Compra</a>
+
+    {% if compras %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>N°Compra</th>
+                <th>Fecha de la Compra</th>
+                <th>N° de Factura</th>
+                <th>Proveedor</th>
+                <th>Moneda Compra</th>
+                <th>Tasa Aplicada</th>
+                <th>Total Divisa</th>
+                <th>Total Bs.</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for compra in compras %}
+            <tr>
+                <td>{{ compra.id }}</td>
+                <td>{{ compra.fecha_compra.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>{{ compra.numero_factura }}</td>
+                <td>{{ compra.proveedor.nombre }}</td>
+                <td>{{ compra.moneda_total_divisa }}</td>{# Muestra la moneda en la que se pago USD/EUR #}
+                <td>{{ "%.4f" % compra.tasa_cambio_aplicada }}</td>{# muestra la tasa aplicada con mas precision #}
+                <td>{{ "%.2f" % compra.total_compra_divisa}} {{ compra.moneda_total_divisa }}</td>{# Muestra el total en divisa #}
+                <td>{{ "%.2f" % compra.total_compra_bs }}</td>{# Muestra el total en Bs. #}
+                <td>
+                    <a href="{{ url_for('ver_detalle_compra', compra_id=compra.id) }}" method="POST" class="btn btn-sm btn-warning">Detalles</a>
+                    {# Añadir un botón de eliminar que posiblemente use un modal o JS para confirmar #}
+                    
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <h6 style="color:#eee0b9">No hay proveedores registrados aún.</h6>
+    {% endif %}
+{% endblock %}

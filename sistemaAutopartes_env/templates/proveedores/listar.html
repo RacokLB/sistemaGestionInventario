@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Listado de Proveedores{% endblock %}
+
+{% block content %}
+    <h2>Listado de Proveedores</h2>
+    <a href="{{ url_for('crear_proveedor') }}" class="btn btn-primary mb-3">Nuevo Proveedor</a>
+
+    {% if proveedores %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Rif</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for proveedor in proveedores %}
+            <tr>
+                <td>{{ proveedor.id }}</td>
+                <td>{{ proveedor.nombre }}</td>
+                <td>{{ proveedor.rif }}</td>
+                <td>{{ proveedor.telefono }}</td>
+                <td>{{ proveedor.email }}</td>
+                <td>
+                    <a href="{{ url_for('editar_proveedor', id=proveedor.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                    {# Añadir un botón de eliminar que posiblemente use un modal o JS para confirmar #}
+                    <a href="{{ url_for('eliminar_proveedor', id=proveedor.id) }}" method="POST" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que quieres eliminar este proveedor?')">Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No hay proveedores registrados aún.</p>
+    {% endif %}
+{% endblock %}

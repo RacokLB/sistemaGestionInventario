@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}Consulta de Piezas{% endblock %}
+
+{% block content %}
+<style>
+    /* Estilos personalizados para parecerse a Gemini */
+    body {
+        background-color: #121212; /* Fondo oscuro */
+        color: #e0e0e0; /* Texto claro */
+        font-family: 'Google Sans', sans-serif; /* Simular la fuente de Google */
+    }
+
+    .container {
+        padding-top: 1px; /* Ajustado para dar más espacio en la parte superior */
+    }
+
+    .display-4 {
+        color: #eee0b9; /* Color de título ajustado */
+        font-weight: 500;
+    }
+
+    .lead {
+        color: #9aa0a6; /* Un gris más claro para el subtítulo */
+    }
+
+    .input-group {
+        width: 100%;
+        max-width: 700px;
+        margin: 0 auto;
+        border-radius: 28px; /* Bordes más redondeados */
+        background-color: #202124; /* Fondo de la barra de entrada */
+        border: 1px solid #5f6368; /* Borde sutil */
+        overflow: hidden;
+    }
+
+    .form-control {
+        background-color: #202124;
+        border: none;
+        color: #e0e0e0;
+        padding-left: 20px;
+        font-size: 1.1rem;
+        box-shadow: none !important;
+    }
+
+    .form-control::placeholder {
+        color: #9aa0a6;
+    }
+
+    .btn-custom {
+        background-color: #5f6368;
+        border: none;
+        color: #e0e0e0;
+        border-radius: 28px;
+        margin: 5px;
+        padding: 8px 20px;
+        /* Asegúrate de que el SVG se alinee correctamente si hay texto */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-custom:hover {
+        background-color: #cdffc9;
+    }
+
+    .card {
+        background-color: #202124;
+        border: None; /* Eliminado el borde, ya que el box-shadow lo simula mejor */
+        border-radius: 24px;
+        box-shadow: 0 1px 2px 0 rgba(220, 223, 185, 0.3), 0 2px 6px 2px rgba(240, 241, 217, 0.705);
+    }
+
+    /* .card-header no se usa en el HTML actual, pero si se añade, estos estilos son buenos */
+    .card-header {
+        background-color: #202124;
+        border-bottom: 1px solid #3c4043;
+        border-radius: 24px 24px 0 0;
+    }
+
+    .response-container {
+        min-height: 150px; /* Altura mínima para mostrar la respuesta */
+        padding: 20px;
+        line-height: 1.6;
+        color: #e0e0e0; /* Cambiado a text-light para consistencia con JS */
+        text-align: left;
+        white-space: pre-wrap; /* Mantiene saltos de línea y espacios */
+    }
+
+    .spinner-border {
+        color: #8ab4f8 !important; /* Color de Google Blue */
+    }
+</style>
+
+<div class="container text-center">
+    <div class="row justify-content-center">
+        <h1 class="display-4 text-center mb-4 fw-bold">Consulta de Piezas</h1>
+        <p class="lead text-center mb-5" style="color: #cec09b;">
+            Describe la pieza que necesitas, la marca, modelo y año del vehículo para una búsqueda precisa.
+        </p>
+
+        <form id="consulta-form" class="col-12 col-md-9 col-lg-7">
+            <div class="input-group">
+                <input type="text" class="form-control" id="consulta-input"
+                    placeholder="Ej: Amortiguadores delanteros para Toyota Corolla 2010" required>
+                <button class="btn btn-custom" type="submit" id="submit-button">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 21.35L12 21.35C16.97 21.35 21 17.32 21 12.35L21 12.35C21 7.38 16.97 3.35 12 3.35L12 3.35C7.03 3.35 3 7.38 3 12.35L3 12.35C3 17.32 7.03 21.35 12 21.35ZM12 19.35C8.13 19.35 5 16.22 5 12.35C5 8.48 8.13 5.35 12 5.35C15.87 5.35 19 8.48 19 12.35C19 16.22 15.87 19.35 12 19.35ZM11 15.35H13V17.35H11V15.35ZM11 7.35H13V13.35H11V7.35Z" fill="#e0e0e0"/>
+                    </svg>
+                </button>
+            </div>
+        </form>
+
+        <div class="col-12 col-md-10 mt-5">
+            <div class="card">
+                <div class="card-body">
+                    <div id="response-area" class="response-container text-secondary">
+                        Tu respuesta aparecerá aquí.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Incluye Bootstrap JS y Popper.js -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const form = document.getElementById('consulta-form');
+    const input = document.getElementById('consulta-input');
+    const responseArea = document.getElementById('response-area');
+    const submitButton = document.getElementById('submit-button'); // Obtener referencia al botón
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const userPrompt = input.value;
+        if (!userPrompt) return;
+
+        // Deshabilitar el botón y mostrar estado de carga
+        submitButton.disabled = true; // Deshabilita el botón
+        responseArea.innerHTML = `
+            <div class="d-flex justify-content-start align-items-center h-100">
+                <div class="spinner-border text-primary me-2" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <span class="ms-2">Buscando una respuesta...</span>
+            </div>
+        `;
+        responseArea.classList.remove('text-secondary', 'text-light');
+        responseArea.classList.add('text-muted');
+
+        try {
+            const response = await fetch('/api/consulta', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: userPrompt })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Error desconocido del servidor.' }));
+                throw new Error(`HTTP error! Status: ${response.status}. Message: ${errorData.error || response.statusText}`);
+            }
+
+            const data = await response.json();
+            
+            if (data.error) {
+                responseArea.innerHTML = `<p class="text-danger">Error: ${data.error}</p>`;
+                responseArea.classList.remove('text-muted');
+                responseArea.classList.add('text-danger');
+            } else {
+                responseArea.innerHTML = data.respuesta;
+                responseArea.classList.remove('text-muted', 'text-danger');
+                responseArea.classList.add('text-light');
+            }
+
+        } catch (error) {
+            console.error('Error en la solicitud fetch:', error);
+            responseArea.innerHTML = `<p class="text-danger">Error al procesar la solicitud. Por favor, intenta de nuevo. Detalles: ${error.message || error}</p>`;
+            responseArea.classList.remove('text-muted');
+            responseArea.classList.add('text-danger');
+        } finally {
+            // Habilitar el botón de nuevo, sin importar el resultado
+            submitButton.disabled = false;
+        }
+    });
+</script>
+{% endblock %}

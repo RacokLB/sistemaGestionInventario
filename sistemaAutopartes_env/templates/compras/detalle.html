@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle de Compra{% endblock %}
+
+{% block content %}
+    
+    <style>
+        p{
+            color:#eee0b9;
+            font-family:'Google Sans';
+        }
+        h2{
+            color:#fff6e0;
+            font-family:'Google Sans';
+        } 
+    </style>
+
+    <h2 class="display-5" >N° de Compra #{{ compra.id }}</h2>
+    <p><strong>Proveedor:</strong> {{ compra.proveedor.nombre }}</p> 
+    <p><strong>Fecha de Compra:</strong> {{ compra.fecha_compra.strftime('%d/%m/%Y %H:%M') }}</p>
+    <p><strong>N° de Factura:</strong> {{ compra.numero_factura }} </p>
+    <hr>
+
+    <h3>Informacion de Moneda y Total</h3>
+    <p><strong>Moneda de compra (Inicial):</strong> {{ compra.moneda_total_divisa }}</p>
+    <p><strong>Tasa de Cambio BCV Aplicada:</strong> Bs. {{ "%.4f" % compra.tasa_cambio_aplicada }} por 1 {{ compra.moneda_total_divisa }}</p>
+    <p><strong>Total de compra en Divisa:</strong> {{ "%.2f" % compra.total_compra_divisa }} {{ compra.moneda_total_divisa }}</p>
+    <p><strong>Total de compra en Bolívar (Bs.):</strong> Bs. {{ "%.2f" % compra.total_compra_bs }}</p>
+
+    <hr>
+
+    <h3>Productos Comprados</h3>
+    {% if compra.detalles %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Adquisición Unitario (en Divisa)</th>{# Ajustado para reflejar que el precio unitario está en divisa #}
+                <th>Subtotal (en Divisa)</th>{# Ajustado para reflejar que el subtotal es en divisa #}
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in compra.detalles %}
+            <tr>
+                <td>{{ detalle.detalle_compras.descripcion }}</td>
+                <td>{{ detalle.cantidad }}</td>
+                <td>{{ "%.2f" % detalle.precio_adquisicion }} {{ compra.moneda_total_divisa }}</td>{# Muestra el precio unitario en la divisa original #}
+                <td>{{ "%.2f" % (detalle.cantidad * detalle.precio_adquisicion) }} {{ compra.moneda_total_divisa }}</td>{# Muestra el subtotal en la divisa original #}
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No se encontraron detalles de productos para esta compra.</p>
+    {% endif %}
+
+    <a href="{{ url_for('listar_compras') }}" class="btn btn-secondary">Volver al Listado de Compras</a>
+    <a href="{{ url_for('imprimir_codigos_productos', compra_id=compra.id) }}" class="btn btn-info">Imprimir Códigos de Barra</a>
+{% endblock %}

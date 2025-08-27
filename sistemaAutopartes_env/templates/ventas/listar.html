@@ -1,0 +1,51 @@
+{# templates/ventas/listar.html #}
+
+{% extends 'base.html' %}
+
+{% block title %}Listado de Ventas{% endblock %}
+
+{% block content %}
+    <h2>Listado de Ventas</h2>
+    <a href="{{ url_for('crear_venta') }}" class="btn btn-primary mb-3">Registrar Nueva Venta</a>
+
+    <table class="table table-striped table-hover table-sm"> {# Añadimos algunas clases para mejorar el estilo #}
+        <thead>
+            <tr>
+                <th>N° de Venta</th>
+                <th>Cliente</th>
+                <th>Fecha Venta</th>
+                <th>Moneda Venta</th> {# Nueva Columna #}
+                <th>Tasa Aplicada</th> {# Nueva Columna #}
+                <th>Total Divisa</th> {# Nueva Columna #}
+                <th>Total Bs.</th> {# Modificado para ser el principal en Bs. #}
+                <th>Nota de Entrega</th> {# Campo corregido #}
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for venta in ventas %}
+            <tr>
+                <td>{{ venta.id }}</td>
+                <td>{{ venta.cliente.nombre }} {{ venta.cliente.apellido }}</td>
+                <td>{{ venta.fecha_venta.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>{{ venta.moneda_total_divisa }}</td> {# Muestra la moneda de origen (USD/EUR) #}
+                <td>{{ "%.4f" % venta.tasa_cambio_aplicada }}</td> {# Muestra la tasa con más precisión #}
+                <td>{{ "%.2f" % venta.total_venta_divisa }} {{ venta.moneda_total_divisa }}</td> {# Muestra el total en divisa #}
+                <td>Bs. {{ "%.2f" % venta.total_venta_bs }}</td> {# Muestra el total en Bolívar #}
+                <td>{{ venta.numero_nota_entrega }}</td> {# Usamos el campo correcto 'numero_nota_entrega' #}
+                <td>
+                    {# Puedes añadir un enlace para ver el detalle de la nota de entrega #}
+                    <a href="{{ url_for('ver_detalle_venta', venta_id=venta.id) }}" class="btn btn-sm btn-info">Ver Detalle</a>
+                    {# Opcional: <a href="{{ url_for('editar_venta', venta_id=venta.id) }}" class="btn btn-sm btn-warning">Editar</a> #}
+                    {# Opcional: <a href="{{ url_for('eliminar_venta', venta_id=venta.id) }}" class="btn btn-sm btn-danger">Eliminar</a> #}
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not ventas %}
+            <tr>
+                <td colspan="9">No hay ventas registradas aún.</td> {# Actualizamos el colspan #}
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+{% endblock %}

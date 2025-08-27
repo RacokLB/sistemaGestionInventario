@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Sistema de Autopartes{% endblock %}
+
+{% block content %}
+
+    <div class="container">
+        <div class="mb-4">
+            <h1 class="display-4 fw-bold ">Resumen del Negocio</h1>
+            <p class="lead" style="color:#999079" >Métricas clave y tasas de cambio en tiempo real.</p>
+        </div>
+
+        <!-- Sección de Filtro de Fechas -->
+        <div class="mb-4 p-4 card shadow-sm">
+            <h3 class="h5 card-title mb-3">Filtrar por Período</h3>
+            <form method="GET" action="{{ url_for('dashboard') }}" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label for="start_date" class="form-label">Fecha de Inicio</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date or '' }}">
+                </div>
+                <div class="col-md-5">
+                    <label for="end_date" class="form-label">Fecha de Fin</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date or '' }}">
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-primary">Aplicar Filtro</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Sección de Gráfico de Tasas de Cambio -->
+        <h2 class="fw-semibold mb-3">Historial de Tasas de Cambio</h2>
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm p-4">
+                    <h3 class="h4 card-title text-success mb-2">Tasa del Dólar (USD,EUR) - Últimos 30 Días</h3>
+                    <canvas id="tasaDolarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Tasas de Cambio en tiempo real -->
+        <h2 class="fw-semibold mb-3">Tasas de Cambio BCV (Tiempo Real)</h2>
+        <div class="row g-4 mb-4">
+            <!-- Tarjeta Dólar BCV -->
+            <div class="col-12 col-md-6">
+                <div class="card shadow-sm p-4 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <h3 class="h4 card-title text-success mb-2">Dólar BCV</h3>
+                        {% if tasa_bcv %}
+                        <p class="h1 fw-bold text-dark">Bs. {{ tasa_bcv }}</p>
+                        <p class="text-secondary mt-2"><small>Última actualización: {{ fecha_usd }}</small></p>
+                        {% else %}
+                        <p class="text-danger">Error al cargar la tasa.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta Euro BCV -->
+        <!--
+            <div class="col-12 col-md-6">
+                <div class="card shadow-sm p-4 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <h3 class="card-title mb-2">Euro BCV</h3>
+                        {% if tasa_eur %}
+                        <p class="h1 fw-bold text-dark">Bs. {{ tasa_eur }}</p>
+                        <p class="text-secondary mt-2"><small>Última actualización: {{ fecha_eur }}</small></p>
+                        {% else %}
+                        <p class="text-danger">Error al cargar la tasa.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        --->
+
+        <!-- Sección de Métricas Generales -->
+        <h2 class="fw-semibold mb-3">Métricas Principales</h2>
+        <div class="row g-4 mb-4">
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm p-4">
+                    <h3 class="h4 card-title text-purple mb-2">Ventas (Divisas)</h3>
+                    <p class="h1 fw-bold text-dark">${{ total_ventas }}</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm p-4">
+                    <h3 class="h4 card-title text-danger mb-2">Compras (Divisas)</h3>
+                    <p class="h1 fw-bold text-dark">${{ total_compras }}</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm p-4">
+                    <h3 class="h4 card-title text-teal mb-2">Valor Inventario</h3>
+                    <p class="h1 fw-bold text-dark">${{ valor_inventario }}</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm p-4">
+                    <h3 class="h4 card-title text-warning mb-2">Ventas (Bs)</h3>
+                    <p class="h1 fw-bold text-dark">Bs. {{ total_ventas_bs }}</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm p-4">
+                    <h3 class="h4 card-title text-orange mb-2">Ganancia Bruta</h3>
+                    <p class="h1 fw-bold text-dark">${{ ganancia_bruta }}</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm p-4">
+                    <h3 class="h4 card-title text-primary mb-2">Stock Total</h3>
+                    <p class="h1 fw-bold text-dark">{{ cantidad_total_stock }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Listados -->
+        <div class="row g-4">
+            <!-- Productos más vendidos -->
+            <div class="col-12 col-md-6">
+                <div class="card shadow-sm p-4">
+                    <h3 class="h4 card-title text-dark mb-3">Top 5 Productos Más Vendidos</h3>
+                    <ul class="list-group list-group-flush">
+                        {% for producto in productos_mas_vendidos %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-dark">{{ producto.descripcion }}</span>
+                            <span class="badge bg-success rounded-pill">{{ producto.total_vendido }} vendidos</span>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-secondary fst-italic">No hay datos de ventas.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Productos bajo stock -->
+            <div class="col-12 col-md-6">
+                <div class="card shadow-sm p-4">
+                    <h3 class="h4 card-title text-dark mb-3">Productos con Bajo Stock</h3>
+                    <ul class="list-group list-group-flush">
+                        {% for producto in productos_bajo_stock %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-0 text-dark">{{ producto.descripcion }}</p>
+                                <small class="text-secondary">{{ producto.marca_vehiculo_nombre }} {{ producto.modelo_vehiculo_nombre }}</small>
+                            </div>
+                            <span class="badge bg-danger rounded-pill">{{ producto.stock }} en stock</span>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-secondary fst-italic">Todos los productos tienen suficiente stock.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Productos menos vendidos -->
+            <div class="col-12 col-md-6">
+                <div class="card shadow-sm p-4">
+                    <h3 class="h4 card-title text-dark mb-3">Top 5 Productos Menos Vendidos</h3>
+                    <ul class="list-group list-group-flush">
+                        {% for producto in productos_menos_vendidos %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-dark">{{ producto.descripcion }}</span>
+                            <span class="badge bg-warning rounded-pill">{{ producto.total_vendido or 0 }} vendidos</span>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-secondary fst-italic">No hay datos de ventas.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incluir Bootstrap JS y Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
+    <!-- Incluir Chart.js para los gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Script para renderizar el gráfico -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // El backend debe pasar los datos como una lista de valores y una de fechas
+            const tasasUSD = {{ tasas_usd_ultimos_30_dias | tojson }};
+            const fechas = {{ fechas_ultimos_30_dias | tojson }};
+            
+            const ctx = document.getElementById('tasaDolarChart').getContext('2d');
+            const tasaDolarChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: fechas,
+                    datasets: [{
+                        label: 'Tasa de Cambio (BCV)',
+                        data: tasasUSD,
+                        borderColor: '#000',
+                        backgroundColor: '#AFDEAF',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += `Bs. ${context.parsed.y.toFixed(2)}`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Fecha'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Tasa de Cambio (Bs.)'
+                            },
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

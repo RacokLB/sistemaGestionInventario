@@ -1,0 +1,62 @@
+/*Archivos estáticos (CSS, JS, imágenes de códigos de barras)
+/*barcodes guardara las imagenes de los codigos de barras*/
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+*,
+::after,
+::before {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Google Sans', sans-serif;
+    background: linear-gradient(to right, #1e130c, #9a8478);
+    font-size: 0.875rem;
+    opacity: 1;
+    overflow-y: scroll;
+    margin: 0;
+}
+
+a {
+    cursor: pointer;
+    text-decoration: none;
+    font-family: 'Google Sans', sans-serif;
+}
+
+h1 {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 1.275rem;
+    color: #eee0b9;
+}
+h2 {
+    font-family: 'Google Sans', sans-serif;
+    color:#afa27d
+}
+h3 {
+    font-family: 'Google Sans', sans-serif;
+    color:#fff6e0;
+}
+h4 {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 1.275rem;
+    color: #eee0b9;
+}
+
+.modal-header{
+    font-family:'Google Sans', sans-serif;
+    background: radial-gradient(circle,rgba(38, 17, 24, 1) 0%, rgba(3, 17, 38, 1) 100%);
+    color:#eee0b9;
+    
+}
+
+.modal-body{
+    font-family:'Google Sans', sans-serif;
+    background: radial-gradient(circle,rgba(38, 17, 24, 1) 0%, rgba(3, 17, 38, 1) 100%);
+    
+}
+
+.modal-footer{
+    font-family:'Google Sans', sans-serif;
+    background: radial-gradient(circle,rgba(38, 17, 24, 1) 0%, rgba(3, 17, 38, 1) 100%);
+}

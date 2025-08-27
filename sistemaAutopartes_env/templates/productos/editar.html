@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Producto{% endblock %}
+
+{% block content %}
+    <h2>Editar Producto: {{ producto.descripcion }}</h2>
+    <form method="POST" action="{{ url_for('editar_producto', id=producto.id) }}">
+        {{ form.hidden_tag() }}
+        <div class="card p-4">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="categoria_id" class="form-label">Categoría de la Pieza:</label>
+                    {{ form.categoria_id(class="form-select") }}
+                    {% if form.categoria_id.errors %}<div class="invalid-feedback d-block">{% for error in form.categoria_id.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="pieza_id" class="form-label">Producto General (Tipo de Pieza):</label>
+                    {{ form.pieza_id(class="form-select", disabled=True) }} 
+                    {% if form.pieza_id.errors %}<div class="invalid-feedback d-block">{% for error in form.pieza_id.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_marca_vehiculo" class="form-label">Marca del Vehículo:</label>
+                    {{ form.id_marca_vehiculo(class="form-select") }}
+                    {% if form.id_marca_vehiculo.errors %}<div class="invalid-feedback d-block">{% for error in form.id_marca_vehiculo.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_modelo_vehiculo" class="form-label">Modelo del Vehículo:</label>
+                    {{ form.id_modelo_vehiculo(class="form-select", disabled=True) }} 
+                    {% if form.id_modelo_vehiculo.errors %}<div class="invalid-feedback d-block">{% for error in form.id_modelo_vehiculo.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.descripcion.label(class="form-label") }}
+                    {{ form.descripcion(class="form-control") }}
+                    {% if form.descripcion.errors %}<div class="invalid-feedback d-block">{% for error in form.descripcion.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    {{ form.marca_repuesto.label(class="form-label") }}
+                    {{ form.marca_repuesto(class="form-control") }}
+                    {% if form.marca_repuesto.errors %}<div class="invalid-feedback d-block">{% for error in form.marca_repuesto.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    {{ form.generacion.label(class="form-label") }}
+                    {{ form.generacion(class="form-control", placeholder="Ej: 2000-2005") }}
+                    {% if form.generacion.errors %}<div class="invalid-feedback d-block">{% for error in form.generacion.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    {{ form.precio_compra.label(class="form-label") }}
+                    {{ form.precio_compra(class="form-control", placeholder="Ej: 2000-2005") }}
+                    {% if form.precio_compra.errors %}<div class="invalid-feedback d-block">{% for error in form.precio_compra.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    {{ form.precio_venta.label(class="form-label") }}
+                    {{ form.precio_venta(class="form-control") }}
+                    {% if form.precio_venta.errors %}<div class="invalid-feedback d-block">{% for error in form.precio_venta.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="col-md-2 mb-3">
+                    {{ form.stock.label(class="form-label") }}
+                    {{ form.stock(class="form-control") }}
+                    {% if form.stock.errors %}<div class="invalid-feedback d-block">{% for error in form.stock.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    {{ form.ubicacion.label(class="form-label") }}
+                    {{ form.ubicacion(class="form-control") }}
+                    {% if form.ubicacion.errors %}<div class="invalid-feedback d-block">{% for error in form.ubicacion.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('listar_productos') }}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </div>
+        
+        {# El stock no se edita directamente, solo a través de compras/ventas #}
+        {# El código de barras no se edita, se mantiene el original #}
+
+        <img src="{{ url_for('static', filename='barcodes/' + producto.codigo_barras_base64 + '.png') }}" alt="Código de barras de {{ producto.descripcion }}" width="150">
+        <p>Código de Barras: {{ producto.codigo_barras }}</p>
+        
+
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+            $(document).ready(function() {
+                //We get all fields selects
+                const categoriaSelect = $('#categoria_id');
+                const piezasSelect = $('#pieza_id');
+                const marcaVehiculoSelect = $('#id_marca_vehiculo');
+                const modeloVehiculoSelect = $('#id_modelo_vehiculo');
+
+                // Store the initial values from the 'producto' object
+                // You need to get these values from Jinja2 into your JavaScript
+                const initialPiezaId = {{ producto.pieza_generica_id | default(0) }}; // Use default(0) for safety
+                const initialModeloVehiculoId = {{ producto.id_modelo_vehiculo | default(0) }}; // Use default(0) for safety
+                console.log(initialPiezaId)
+                //Funcion to reset all selectors and disable selectors
+                function resetAndDisableSelect(selectElement, defaultText){
+                    selectElement.html(`<option value="0">${defaultText}</option>`).prop('disabled', true);
+                }
+
+                // ---- Logica para Categoria de Pieza
+
+                async function fetchPiezas(categoria_id, pieza_to_select = null){ // Add new parameter
+                    try{
+                        const response = await fetch(`/api/piezas_por_categoria/${categoria_id}`);
+                        const piezas = await response.json();
+                        piezasSelect.empty().append('<option value="0">Selecciona una pieza</option>');
+                        piezas.forEach(pieza =>{
+                            piezasSelect.append(`<option value="${pieza.id}">${pieza.nombre}</option>`);
+                        });
+                        piezasSelect.prop('disabled',false);
+
+                        // NEW: Pre-select the specific piece if provided
+                        if (pieza_to_select) {
+                            piezasSelect.val(pieza_to_select);
+                            // Ensure the select is enabled if a value was selected
+                            piezasSelect.prop('disabled', false);
+                        }
+
+                    }catch (error){
+                        console.error('Error al cargar las piezas:', error);
+                        resetAndDisableSelect(piezasSelect, 'Error al cargar');
+                    }
+                }
+
+                // In your categoriaSelect.on('change', function() { ... })
+                categoriaSelect.on('change', function() {
+                    const selectedCategoriaId = $(this).val();
+                    resetAndDisableSelect(piezasSelect, 'Selecciona una pieza');
+                    if (selectedCategoriaId && selectedCategoriaId !== "0") {
+                        fetchPiezas(selectedCategoriaId); // No pre-selection needed on change
+                    }
+                });
+
+                //Logica de modelos---
+                async function fetchModelos(marca_id, modelo_to_select = null){ // Add new parameter
+                    try{
+                        const response = await fetch(`/api/modelos_por_marca/${marca_id}`);
+                        const modelos = await response.json();
+                        modeloVehiculoSelect.empty().append('<option value="0">Selecciona un modelo</option>');
+                        modelos.forEach(modelo =>{
+                            modeloVehiculoSelect.append(`<option value="${modelo.id}">${modelo.nombre}</option>`);
+                        });
+                        modeloVehiculoSelect.prop('disabled', false);
+
+                        // NEW: Pre-select the specific model if provided
+                        if (modelo_to_select) {
+                            modeloVehiculoSelect.val(modelo_to_select);
+                            // Ensure the select is enabled if a value was selected
+                            modeloVehiculoSelect.prop('disabled', false);
+                        }
+
+                    }catch (error){
+                        console.error('Error al cargar modelos:', error);
+                        resetAndDisableSelect(modeloVehiculoSelect, 'Error al cargar los modelos');
+                    }
+                }
+
+                // In your marcaVehiculoSelect.on('change', function() { ... })
+                marcaVehiculoSelect.on('change', function(){
+                    const selectedMarcaId = $(this).val();
+                    resetAndDisableSelect(modeloVehiculoSelect, 'Selecciona un modelo');
+                    if (selectedMarcaId && selectedMarcaId !== "0") {
+                        fetchModelos(selectedMarcaId); // No pre-selection needed on change
+                    }
+                });
+
+                //--- Inicializacion al cargar la pagina ----
+                const inicialCategoriaId = categoriaSelect.val();
+                if (inicialCategoriaId && inicialCategoriaId !== "0") {
+                    // Pass the initialPiezaId to pre-select it
+                    fetchPiezas(inicialCategoriaId, initialPiezaId);
+                } else {
+                    resetAndDisableSelect(piezasSelect, 'Selecciona una pieza');
+                }
+
+                const inicialMarcaId = marcaVehiculoSelect.val();
+                if (inicialMarcaId && inicialMarcaId !== "0") {
+                    // Pass the initialModeloVehiculoId to pre-select it
+                    fetchModelos(inicialMarcaId, initialModeloVehiculoId);
+                } else {
+                    resetAndDisableSelect(modeloVehiculoSelect, 'Selecciona un modelo');
+                }
+            });
+    </script>
+{% endblock %}

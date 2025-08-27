@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Imprimir Códigos de Barra</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .etiqueta {
+            /* Tamaño de etiqueta de 4cm x 2.5cm, común para impresoras térmicas */
+            width: 4cm;
+            height: 2.5cm;
+            padding: 2mm;
+            border: 1px solid #ccc;
+            display: inline-block;
+            margin: 1mm;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        
+        .etiqueta img {
+            max-width: 95%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .etiqueta p {
+            margin: 0;
+            font-size: 8px;
+            overflow: hidden; /* Ocultar texto que exceda la etiqueta */
+            white-space: nowrap;
+        }
+
+        /* Ocultar elementos que no deben ser impresos */
+        @media print {
+            body { 
+                margin: 0; 
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+            .etiqueta {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align:center; margin: 10px;">
+        <h3>Vista Previa de Códigos de Barra</h3>
+        <p>Ajusta tu impresora para que no tenga márgenes y que el escalado sea "Ajustar al área imprimible".</p>
+        <button onclick="window.print()">Imprimir Etiquetas</button>
+    </div>
+
+    {% for item in productos %}
+        {% for _ in range(item.cantidad) %}
+            <div class="etiqueta">
+                <!-- Usar corchetes para acceder a las claves del diccionario 'item' -->
+                <p>{{ item['descripcion'] | truncate(20) }}</p>
+                <img src="data:image/png;base64,{{ generar_codigo_barras_base64(item['producto_id']) }}" alt="Código de barras">
+                <p>$. {{ "%.2f"|format(item['precio_venta']) }}</p>
+            </div>
+        {% endfor %}
+    {% endfor %}
+</body>
+</html>

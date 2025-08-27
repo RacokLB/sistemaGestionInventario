@@ -1,0 +1,483 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Compra{% endblock %}
+<body>
+{% block body_attributes %}
+    {% if usd_rate %}data-usd-rate="{{ usd_rate }}"{% endif %}
+    {% if eur_rate %}data-eur-rate="{{ eur_rate }}"{% endif %}
+{% endblock %}
+
+{% block content %}
+    <style>
+        .form-label{
+            color:#fff2d1;
+            font-family:'Google Sans';
+            font-size:large;
+        }
+        
+    </style>
+    <h2 class="mb-4 display-5">Registrar Nueva Compra</h2>
+    
+    <!-- Contenedor para mensajes flash personalizados -->
+    <div id="custom-flash-messages" class="mb-4"></div>
+
+    <form method="POST" action="{{ url_for('crear_compra') }}" id="form-compra-principal">
+        {{ form.hidden_tag() }} {# Este genera el token CSRF principal #}
+        
+        <div class="mb-4">
+            {{ form.proveedor_id.label(class="form-label") }}
+            {{ form.proveedor_id(class="form-select") }}
+            {% if form.proveedor_id.errors %}<div class="invalid-feedback d-block">{% for error in form.proveedor_id.errors %}{{ error }}{% endfor %}</div>{% endif %}
+        </div>
+        <div class="mb-4">
+            {{ form.numero_factura.label(class="form-label") }}
+            {{ form.numero_factura(class="form-control",placeholder="#123456-0000", id="numero-factura-input") }}
+            {% if form.numero_factura.errors %}<div class="invalid-feedback d-block">{% for error in form.numero_factura.errors %}{{ error }}{% endfor %}</div>{% endif %}
+        </div>
+
+        {# --- Nuevos campos para Moneda y Tasa de Cambio --- #}
+        <div class="mb-4">
+            {{ form.moneda_compra.label(class="form-label") }}
+            {{ form.moneda_compra(class="form-select") }}
+            {% if form.moneda_compra.errors %}<div class="invalid-feedback d-block">{% for error in form.moneda_compra.errors %}{{ error }}{% endfor %}</div>{% endif %}
+        </div>
+
+        <div class="mb-4">
+            {{ form.tasa_cambio_actual.label(class="form-label") }}
+            {{ form.tasa_cambio_actual(class="form-control") }}
+            {% if form.tasa_cambio_actual.errors %}<div class="invalid-feedback d-block">{% for error in form.tasa_cambio_actual.errors %}{{ error }}{% endfor %}</div>{% endif %}
+        </div>
+        {# --- Fin de nuevos campos --- #}
+
+        <div class="card p-4 mb-4">
+            <h3 class="card-title mb-4 text-center">Buscar y Seleccionar Productos Existentes</h3>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="marca_vehiculo_compra" class="form-label " style="color:#333028">Marca del Vehículo:</label>
+                    <select class="form-select" id="marca_vehiculo_compra" name="marca_vehiculo_compra">
+                        <option value="">Selecciona una marca</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="modelo_vehiculo_compra" class="form-label" style="color:#333028">Modelo del Vehículo:</label>
+                    <select class="form-select" id="modelo_vehiculo_compra" name="modelo_vehiculo_compra" disabled>
+                        <option value="">Selecciona un modelo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="categoria_producto_compra" class="form-label" style="color:#333028">Categoría de la Pieza:</label>
+                    <select class="form-select" id="categoria_producto_compra" name="categoria_producto_compra">
+                        <option value="">Selecciona una categoría</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="categoria_pieza_compra" class="form-label" style="color:#333028">Tipo de Pieza:</label>
+                    <select class="form-select" id="categoria_pieza_compra" name="categoria_pieza_compra" disabled>
+                        <option value="">Selecciona el tipo de pieza</option>
+                    </select>
+                </div>
+            </div>
+            
+            <hr class="mt-4">
+
+            <div id="productos-filtrados-compra" class="mt-3">
+                <div class="alert alert-info">Usa los filtros de arriba para buscar productos existentes.</div>
+            </div>
+
+            <hr class="mt-4">
+            <div class="text-center">
+                <a href="{{ url_for('crear_producto') }}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Registrar Producto Nuevo (si no existe)
+                </a>
+            </div>
+        </div>
+
+        <div id="productos-compra-list" class="mt-4">
+            <h4>Productos de esta Compra</h4>
+            <div class="alert alert-info" id="no-productos-msg">Aún no has añadido productos a esta compra.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-4">Registrar Compra</button>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Main form selectors
+            const marcaSelect = $('#marca_vehiculo_compra');
+            const modeloSelect = $('#modelo_vehiculo_compra');
+            const categoriaSelect = $('#categoria_producto_compra');
+            const piezaSelect = $('#categoria_pieza_compra');
+            //Here it´ll be show the filter products
+            const productosContainer = $('#productos-filtrados-compra');
+            //Here it´ll be append the selected products
+            const productosCompraList = $('#productos-compra-list');
+            //create a unique names for the selects products like that productos_comprados-0-cantidad, productos_comprados-1-cantidad
+            let formIndex = 0; 
+
+            // Modal form selectors (for adding a new product)
+            const categoriaModalSelect = $('#categoria_modal_compra');
+            const piezaModalSelect = $('#pieza_modal_compra');
+            const marcaVehiculoModalSelect = $('#marca_vehiculo_modal_compra');
+            const modeloVehiculoModalSelect = $('#modelo_vehiculo_modal_compra');
+
+
+            // --- Custom Flash Message Function ---
+            function showCustomFlash(message, category) {
+                const flashContainer = $('#custom-flash-messages');
+                const alertClass = category === 'success' ? 'alert-success' : 
+                                        category === 'danger' ? 'alert-danger' : 
+                                        category === 'warning' ? 'alert-warning' : 'alert-info';
+                const html = `<div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                                    ${message}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>`;
+                flashContainer.append(html);
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    flashContainer.find('.alert').first().alert('close');
+                }, 5000);
+            }
+
+            // this function is make to reload the depending selectors when on of them (principal selectors like categoria, marca) is change
+            function resetSelect(selectElement, defaultText) {
+                selectElement.html(`<option value="">${defaultText}</option>`).prop('disabled', true);
+            }
+            
+            //this function is make to catch all data from API api/categoria_de_pieza, append the <select> give for (targetSelect) with options of categoria and enable the <select>
+            async function fetchCategorias(targetSelect) {
+                try {
+                    const response = await fetch(`/api/categoria_de_pieza`);
+                    const categorias = await response.json();
+                    targetSelect.empty().append('<option value="">Selecciona una categoría</option>');
+                    categorias.forEach(categoria => {
+                        targetSelect.append(`<option value="${categoria.id}">${categoria.nombre}</option>`);
+                    });
+                    targetSelect.prop('disabled', false);
+                } catch (error) {
+                    console.error('Error al cargar categorías:', error);
+                    resetSelect(targetSelect, 'Error al cargar');
+                    showCustomFlash('Error al cargar las categorías de piezas.', 'danger');
+                }
+            }
+            // make a get request to api/piezas_por_categoria/${categoria_id} to catch the pieces relation with specific category. Append the <select> give for (targetSelect) with the options from piezas and enable <select>
+            async function fetchPiezas(categoria_id, targetSelect) {
+                try {
+                    const response = await fetch(`/api/piezas_por_categoria/${categoria_id}`);
+                    const piezas = await response.json();
+                    
+                    targetSelect.empty().append('<option value="">Selecciona un tipo de pieza</option>');
+                    piezas.forEach(pieza => {
+                        
+                        targetSelect.append(`<option value="${pieza.id}">${pieza.nombre}</option>`);
+                        console.log(`Piezas traidas por categoria ${pieza.id}`)
+                    });
+                    targetSelect.prop('disabled', false);
+                } catch (error) {
+                    console.error('Error al cargar piezas:', error);
+                    resetSelect(targetSelect, 'Error al cargar');
+                    showCustomFlash('Error al cargar los tipos de piezas.', 'danger');
+                }
+            }
+            //this function is make to get all data from API api/marcas_vehiculo, append the <select> give for (targetSelect) with options of marcas_vehiculo and enable the <select>
+            async function fetchMarcas(targetSelect) {
+                try {
+                    const response = await fetch(`/api/marcas_vehiculo/`);
+                    const marcas = await response.json();
+                    console.log(`RESPUESTA DE LAS MARCAS ${marcas} `)
+                    targetSelect.empty().append('<option value="">Selecciona una marca</option>');
+                    marcas.forEach(marca => {
+                        targetSelect.append(`<option value="${marca.id}">${marca.nombre}</option>`);
+                    });
+                    targetSelect.prop('disabled', false);
+                } catch (error) {
+                    console.error('Error al cargar las marcas:', error);
+                    resetSelect(targetSelect, 'Error al cargar');
+                    showCustomFlash('Error al cargar las marcas de vehículos.', 'danger');
+                }
+            }
+
+            // make a get request to api/modelos_por_marca/${marca_id} to catch the pieces relation with specific modelos. Append the <select> give for (targetSelect) with the options from modelos and enable <select>
+            async function fetchModelos(marca_id, targetSelect) {
+                try {
+                    const response = await fetch(`/api/modelos_por_marca/${marca_id}`);
+                    const modelos = await response.json();
+                    
+                    targetSelect.empty().append('<option value="">Selecciona un modelo</option>');
+                    modelos.forEach(modelo => {
+                        targetSelect.append(`<option value="${modelo.id}">${modelo.nombre}</option>`);
+                    });
+                    targetSelect.prop('disabled', false);
+                } catch (error) {
+                    console.error('Error al cargar modelos:', error);
+                    resetSelect(targetSelect, 'Error al cargar');
+                    showCustomFlash('Error al cargar los modelos de vehículos.', 'danger');
+                }
+            }
+
+            // create a URLSearchParams with marca, modelo,categoria, pieza after make a get request to API /api/productos_filtrados/ with those parametres.
+            async function fetchProductosFiltrados(marca, modelo, categoria, pieza) { 
+                try {
+                    //part where is create URLSearchParams()
+                    const params = new URLSearchParams();
+                    if (marca) params.append('marca_id', marca);
+                    if (modelo) params.append('modelo_id', modelo);
+                    if (categoria) params.append('categoria_id', categoria);
+                    if (pieza) params.append('pieza_id', pieza); 
+
+                    const response = await fetch(`/api/productos_filtrados?${params.toString()}`);
+                    const productos = await response.json();
+                    console.log(`fetch de productos filtrados: `, productos);
+                    
+                    let html = '';
+                    if (productos.length > 0) {
+                        html = `
+                            <h4  style="color:#333028">Productos encontrados</h4>
+                            <table class="table table-striped table-bordered table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Marca Repuesto</th>
+                                        <th>Stock Actual</th>
+                                        <th>Precio Adquisicion</th>
+                                        <th>Precio Venta</th>
+                                        <th>Vehículo (Marca/Modelo)</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                        productos.forEach(p => {
+                            html += `
+                                <tr data-producto='${JSON.stringify(p)}'>
+                                    <td>${p.descripcion}</td>
+                                    <td>${p.marca_repuesto}</td>
+                                    <td><span class="badge bg-secondary">${p.stock}</span></td>
+                                    <td>$. ${p.precio_compra}</td>
+                                    <td>$. ${p.precio_venta}</td>
+                                    <td>${p.marca_vehiculo || 'N/A'} / ${p.modelo_vehiculo || 'N/A'}</td>
+                                    <td><button type="button" class="btn btn-sm btn-primary btn-add-producto">Añadir a Compra</button></td>
+                                </tr>`;
+                        });
+                        html += `</tbody></table>`;
+                    } else {
+                        html = `<div class="alert alert-warning">No se encontraron productos con estos criterios.</div>`;
+                    }
+                    productosContainer.html(html);
+
+                    // Listener for "Añadir a Compra" buttons
+                    $('.btn-add-producto').on('click', function() {
+                        const productoData = $(this).closest('tr').data('producto');
+                        addProductoToCompra(productoData);
+                    });
+                } catch (error) {
+                    console.error('Error al cargar productos filtrados:', error);
+                    productosContainer.html(`<div class="alert alert-danger">Hubo un error al buscar productos.</div>`);
+                    showCustomFlash('Hubo un error al buscar productos.', 'danger');
+                }
+            }
+            
+            // This function is called when user press boton to add product
+            function addProductoToCompra(producto) {
+                // Check for duplicates before adding
+                let isDuplicate = false;
+                productosCompraList.find('.detalle-compra-form input[name$="-producto_id"]').each(function() {
+                    if (parseInt($(this).val()) === producto.id) {
+                        isDuplicate = true;
+                        return false; // Break the loop
+                    }
+                });
+
+                if (isDuplicate) {
+                    showCustomFlash(`El producto "${producto.descripcion}" ya ha sido añadido a esta compra.`, 'warning');
+                    return;
+                }
+
+                $('#no-productos-msg').hide();
+                
+                // --- SOLUCIÓN PARA EL TOKEN CSRF FALTANTE ---
+                // 1. Obtener el token CSRF del formulario principal
+                const csrfToken = $('input[name="csrf_token"]').val();
+                
+                const newFormHtml = `
+                    <div class="detalle-compra-form card p-3 mb-3" id="item-${formIndex}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>${producto.descripcion} (${producto.marca_repuesto})</h5>
+                            <button type="button" class="btn btn-danger btn-sm btn-remove-item" data-index="${formIndex}">&times;</button>
+                        </div>
+                        <input type="hidden" name="productos_comprados-${formIndex}-producto_id" value="${producto.id}">
+                        <input type="hidden" name="productos_comprados-${formIndex}-marca_repuesto" value="${producto.marca_repuesto}">
+                        <input type="hidden" name="productos_comprados-${formIndex}-csrf_token" value="${csrfToken}"> {# ¡Añadido este campo! #}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="color:#333028">Cantidad:</label>
+                                <input type="number" name="productos_comprados-${formIndex}-cantidad" class="form-control" value="1" min="1" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="color:#333028">Precio Adquisición:</label>
+                                <input type="number" step="0.01" name="productos_comprados-${formIndex}-precio_adquisicion" class="form-control" min="0.01" required>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                productosCompraList.append(newFormHtml);
+                formIndex++;
+                
+                $('.btn-remove-item').on('click', function() {
+                    $(this).closest('.detalle-compra-form').remove();
+                    if ($('.detalle-compra-form').length === 0) {
+                        $('#no-productos-msg').show();
+                    }
+                });
+            }
+            
+            // --- Event Listeners for Filtering Selects ---
+            
+            // Initial fetch of brands (for main form and modal)
+            async function initializeBrands() {
+                try {
+                    const response = await fetch(`/api/marcas_vehiculo`);
+                    const marcas = await response.json();
+                    
+                    marcaSelect.empty().append('<option value="">Selecciona una marca</option>');
+                    marcas.forEach(marca => {
+                        marcaSelect.append(`<option value="${marca.id}">${marca.nombre}</option>`);
+                    });
+                    
+                    marcaVehiculoModalSelect.empty().append('<option value="">Selecciona una marca de vehículo</option>');
+                    marcas.forEach(marca => {
+                        marcaVehiculoModalSelect.append(`<option value="${marca.id}">${marca.nombre}</option>`);
+                    });
+
+                } catch (error) {
+                    console.error('Error al cargar marcas de vehículos:', error);
+                    resetSelect(marcaSelect, 'Error al cargar');
+                    resetSelect(marcaVehiculoModalSelect, 'Error al cargar');
+                    showCustomFlash('Error al cargar las marcas de vehículos.', 'danger');
+                }
+            }
+            initializeBrands();
+
+            // Initial fetch of categories (for main form and modal)
+            async function initializeCategory() {
+                try {
+                    const response = await fetch(`/api/categoria_de_pieza`);
+                    const categorias = await response.json();
+                    
+                    categoriaSelect.empty().append('<option value="">Selecciona una categoría</option>');
+                    categorias.forEach(categoria => {
+                        categoriaSelect.append(`<option value="${categoria.id}">${categoria.nombre}</option>`);
+                    });
+                    
+                    categoriaModalSelect.empty().append('<option value="">Selecciona una categoría</option>');
+                    categorias.forEach(categoria => {
+                        categoriaModalSelect.append(`<option value="${categoria.id}">${categoria.nombre}</option>`);
+                    });
+
+                } catch (error) {
+                    console.error('Error al cargar las categorias de Repuestos:', error);
+                    resetSelect(categoriaSelect, 'Error al cargar');
+                    resetSelect(categoriaModalSelect, 'Error al cargar');
+                    showCustomFlash('Error al cargar las categorías de repuestos.', 'danger');
+                }
+            }
+            initializeCategory();
+
+
+            marcaSelect.on('change', function() {
+                const selectedMarcaId = $(this).val();
+                resetSelect(modeloSelect, 'Selecciona un modelo');
+                productosContainer.empty();
+                if (selectedMarcaId) {
+                    fetchModelos(selectedMarcaId, modeloSelect);
+                }
+                triggerProductSearch();
+            });
+
+            modeloSelect.on('change', function() {
+                triggerProductSearch();
+            });
+
+            categoriaSelect.on('change', function() {
+                const selectedCategoriaId = $(this).val();
+                
+                resetSelect(piezaSelect, 'Selecciona un tipo de Pieza');
+                productosContainer.empty();
+                if (selectedCategoriaId){
+                    fetchPiezas(selectedCategoriaId,piezaSelect);
+                }
+                triggerProductSearch();
+            });
+            piezaSelect.on('change', function() {
+                triggerProductSearch();
+            });
+
+            // a function unifique catch all values from filters (selectedMarcaId, etc..)after that called fetchProductosFiltrados
+            function triggerProductSearch() {
+                const selectedMarcaId = marcaSelect.val();
+                const selectedModeloId = modeloSelect.val();
+                const selectedCategoria = categoriaSelect.val();
+                const selectedPieza = piezaSelect.val(); 
+                
+                productosContainer.html('<div class="alert alert-info">Cargando productos...</div>');
+                console.log(`valores enviados al backend para el filtrado: MarcaId ${selectedMarcaId}, ModeloId ${selectedModeloId}, PiezaId ${selectedPieza}, CategoriaId ${selectedCategoria} `)
+                
+                // Corregido: Activar la búsqueda si al menos un filtro principal tiene un valor
+                if (selectedMarcaId || selectedModeloId || selectedCategoria || selectedPieza) { 
+                    fetchProductosFiltrados(selectedMarcaId, selectedModeloId, selectedCategoria, selectedPieza); 
+                    console.log(`check it before sending ${selectedPieza}`)
+                } else {
+                    productosContainer.html('<div class="alert alert-info">Usa los filtros de arriba para buscar productos existentes.</div>');
+                }
+            }
+
+            // Lógica JS para cambiar la tasa_cambio_actual mostrada
+            var monedaCompraSelect = document.getElementById('moneda_compra');
+            var tasaCambioCompra = document.getElementById('tasa_cambio_actual');
+
+            if (monedaCompraSelect && tasaCambioCompra) {
+                // Get rates from data attributes on the body (or other suitable element)
+                // Use document.querySelector('body') if you added data attributes to <body>
+                var usdRate = parseFloat(document.body.dataset.usdRate || '0');
+                
+                var eurRate = parseFloat(document.body.dataset.eurRate || '0');
+                console.log(`<li>datos enviados desde la Route.py Tasa de USD: ${usdRate}</li>
+                            <li>datos enviados desde la Route.py Tasa de EUR: ${eurRate}`)
+                // Set initial value based on default selected currency (if any)
+                // You might want to ensure the initial value is correct when the page loads
+                // by triggering the change event or setting it explicitly here.
+                var initialSelected = monedaCompraSelect.value;
+                console.log(`moneda seleccionada ${initialSelected}`)
+                
+                if (initialSelected === 'USD') {
+                    tasaCambioCompra.value = usdRate.toFixed(4);
+                } else if (initialSelected === 'EUR') {
+                    tasaCambioCompra.value = eurRate.toFixed(4);
+                } else {
+                    tasaCambioCompra.value = '0.0000'; // Default if no valid selection or rates
+                }
+
+
+                monedaCompraSelect.addEventListener('change', function() {
+                    var selectedCurrency = this.value;
+                    console.log(`Tipo de divisa seleccionado: ${selectedCurrency}`);
+                    console.log(`Costo de USD (desde data attribute): ${usdRate}`);
+                    console.log(`Costo de EUR (desde data attribute): ${eurRate}`);
+
+                    if (selectedCurrency === 'USD') {
+                        tasaCambioCompra.value = usdRate.toFixed(4);
+                    } else if (selectedCurrency === 'EUR') {
+                        tasaCambioCompra.value = eurRate.toFixed(4);
+                    } else {
+                        tasaCambioCompra.value = '0.0000'; // Fallback if no rate found or currency is not USD/EUR
+                    }
+                });
+            }
+            // Initialize filtered products on page load
+            triggerProductSearch(); 
+        });
+    </script>
+{% endblock %}
+</body>

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %} Registro de cliente {% endblock %}
+
+{% block content %}
+    <h2 class="mb-3"> Registro de Nuevo Cliente </h2>
+    <form method="POST" action="{{url_for('crear_cliente')}}">
+        {{ form.hidden_tag() }}
+        <div class="card p-4 mb-4 shadow-lg">
+            <h4 class="card-title">Datos de la compra</h4>
+            <div class="row align-items-center">
+                <div class="col-md-4 mb-3">
+                    {{ form.nombre.label(class="col-sm-2 col-form-label") }}
+                    {{ form.nombre(class="form-control") }}
+                    {% if form.nombre.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.nombre.errors %}{{error}}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.apellido.label(class="form-label") }}
+                    {{ form.apellido(class="form-control") }}
+                    {% if form.apellido.errors %}
+                    <div class="invalid-feeback d-block">
+                        {% for error in form.apellido.errors %}{{error}}{% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            
+                <div class="col-md-4 mb-3">
+                    {{ form.cedula_rif.label(class="form-label") }}
+                    {{ form.cedula_rif(class="form-control") }}
+                    {% if form.cedula_rif.errors %}
+                
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.cedula_rif.errors %}{{error}}{% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.direccion.label(class="form-label") }}
+                    {{ form.direccion(class="form-control") }}
+                    {% if form.direccion.errors %}
+                
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.direccion.errors %}{{error}}{% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.telefono.label(class="form-label") }}
+                    {{ form.telefono(class="form-control") }}
+                    {% if form.telefono.errors %}
+                
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.telefono.errors %}{{error}}{% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    {{ form.email.label(class="form-label") }}
+                    {{ form.email(class="form-control") }}
+                    {% if form.email.errors %}
+                
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.email.errors %}{{error}}{% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                {{ form.submit(class="btn btn-primary mt-4") }}
+            </div>
+            
+        </div>            
+     
+    </form>
+
+{% endblock %}
