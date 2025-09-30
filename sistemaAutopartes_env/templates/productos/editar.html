@@ -73,8 +73,7 @@
         {# El stock no se edita directamente, solo a través de compras/ventas #}
         {# El código de barras no se edita, se mantiene el original #}
 
-        <img src="{{ url_for('static', filename='barcodes/' + producto.codigo_barras_base64 + '.png') }}" alt="Código de barras de {{ producto.descripcion }}" width="150">
-        <p>Código de Barras: {{ producto.codigo_barras }}</p>
+        
         
 
     </form>

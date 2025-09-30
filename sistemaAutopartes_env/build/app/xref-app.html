@@ -18,9 +18,11 @@
   <a target="code" href="///C:/Users/vbatista/Documents/programas_create_by_victor/sistemaAutopartes/sistemaAutopartes_env/app.py" type="text/plain"><tt>app.py</tt></a>
 <span class="moduletype">Script</span>  <div class="import">
 imports:
-    <a href="#_collections_abc">_collections_abc</a>
+    <a href="#PIL">PIL</a>
+ &#8226;   <a href="#_collections_abc">_collections_abc</a>
  &#8226;   <a href="#_weakrefset">_weakrefset</a>
  &#8226;   <a href="#abc">abc</a>
+ &#8226;   <a href="#barcode.writer">barcode.writer</a>
  &#8226;   <a href="#codecs">codecs</a>
  &#8226;   <a href="#collections">collections</a>
  &#8226;   <a href="#collections.abc">collections.abc</a>
@@ -159,7 +161,6 @@ imports:
  &#8226;   <a href="#keyword">keyword</a>
  &#8226;   <a href="#linecache">linecache</a>
  &#8226;   <a href="#locale">locale</a>
- &#8226;   <a href="#logging">logging</a>
  &#8226;   <a href="#models">models</a>
  &#8226;   <a href="#ntpath">ntpath</a>
  &#8226;   <a href="#operator">operator</a>
@@ -690,7 +691,9 @@ imported by:
  &#8226;   <a href="#PIL._version">PIL._version</a>
  &#8226;   <a href="#PIL._webp">PIL._webp</a>
  &#8226;   <a href="#PIL.features">PIL.features</a>
+ &#8226;   <a href="#app.py">app.py</a>
  &#8226;   <a href="#barcode.writer">barcode.writer</a>
+ &#8226;   <a href="#barcode_utils">barcode_utils</a>
 
   </div>
 
@@ -1378,6 +1381,7 @@ imported by:
  &#8226;   <a href="#PIL.XpmImagePlugin">PIL.XpmImagePlugin</a>
  &#8226;   <a href="#PIL.features">PIL.features</a>
  &#8226;   <a href="#barcode.writer">barcode.writer</a>
+ &#8226;   <a href="#barcode_utils">barcode_utils</a>
 
   </div>
 
@@ -1483,6 +1487,7 @@ imported by:
     <a href="#PIL">PIL</a>
  &#8226;   <a href="#PIL.ImageDraw2">PIL.ImageDraw2</a>
  &#8226;   <a href="#barcode.writer">barcode.writer</a>
+ &#8226;   <a href="#barcode_utils">barcode_utils</a>
 
   </div>
 
@@ -1651,6 +1656,7 @@ imported by:
  &#8226;   <a href="#PIL.ImageDraw2">PIL.ImageDraw2</a>
  &#8226;   <a href="#PIL._imagingft">PIL._imagingft</a>
  &#8226;   <a href="#barcode.writer">barcode.writer</a>
+ &#8226;   <a href="#barcode_utils">barcode_utils</a>
 
   </div>
 
@@ -4632,16 +4638,14 @@ imported by:
 
 <div class="node">
   <a name="app"></a>
-  <a target="code" href="///C:/Users/vbatista/Documents/programas_create_by_victor/sistemaAutopartes/sistemaAutoPartes_env/app.py" type="text/plain"><tt>app</tt></a>
+  <a target="code" href="///C:/Users/vbatista/Documents/programas_create_by_victor/sistemaAutopartes/sistemaAutopartes_env/app.py" type="text/plain"><tt>app</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
     <a href="#config">config</a>
  &#8226;   <a href="#dotenv">dotenv</a>
  &#8226;   <a href="#flask">flask</a>
  &#8226;   <a href="#flask_sqlalchemy">flask_sqlalchemy</a>
- &#8226;   <a href="#logging">logging</a>
  &#8226;   <a href="#models">models</a>
- &#8226;   <a href="#os">os</a>
  &#8226;   <a href="#routes">routes</a>
 
   </div>
@@ -5825,8 +5829,6 @@ imported by:
  &#8226;   <a href="#barcode.upc">barcode.upc</a>
  &#8226;   <a href="#barcode.version">barcode.version</a>
  &#8226;   <a href="#barcode.writer">barcode.writer</a>
- &#8226;   <a href="#barcode_utils">barcode_utils</a>
- &#8226;   <a href="#routes">routes</a>
 
   </div>
 
@@ -6176,8 +6178,8 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#barcode.base">barcode.base</a>
- &#8226;   <a href="#barcode_utils">barcode_utils</a>
+    <a href="#app.py">app.py</a>
+ &#8226;   <a href="#barcode.base">barcode.base</a>
  &#8226;   <a href="#routes">routes</a>
 
   </div>
@@ -6186,15 +6188,15 @@ imported by:
 
 <div class="node">
   <a name="barcode_utils"></a>
-  <a target="code" href="///C:/Users/vbatista/Documents/programas_create_by_victor/sistemaAutopartes/sistemaAutoPartes_env/barcode_utils.py" type="text/plain"><tt>barcode_utils</tt></a>
+  <a target="code" href="///C:/Users/vbatista/Documents/programas_create_by_victor/sistemaAutopartes/sistemaAutopartes_env/barcode_utils.py" type="text/plain"><tt>barcode_utils</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
-    <a href="#barcode">barcode</a>
- &#8226;   <a href="#barcode.writer">barcode.writer</a>
+    <a href="#PIL">PIL</a>
+ &#8226;   <a href="#PIL.Image">PIL.Image</a>
+ &#8226;   <a href="#PIL.ImageDraw">PIL.ImageDraw</a>
+ &#8226;   <a href="#PIL.ImageFont">PIL.ImageFont</a>
  &#8226;   <a href="#base64">base64</a>
- &#8226;   <a href="#config">config</a>
  &#8226;   <a href="#io">io</a>
- &#8226;   <a href="#os">os</a>
 
   </div>
   <div class="import">
@@ -8041,7 +8043,7 @@ imported by:
 
 <div class="node">
   <a name="config"></a>
-  <a target="code" href="///C:/Users/vbatista/Documents/programas_create_by_victor/sistemaAutopartes/sistemaAutoPartes_env/config.py" type="text/plain"><tt>config</tt></a>
+  <a target="code" href="///C:/Users/vbatista/Documents/programas_create_by_victor/sistemaAutopartes/sistemaAutopartes_env/config.py" type="text/plain"><tt>config</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
     <a href="#os">os</a>
@@ -8051,7 +8053,6 @@ imports:
 imported by:
     <a href="#app">app</a>
  &#8226;   <a href="#app.py">app.py</a>
- &#8226;   <a href="#barcode_utils">barcode_utils</a>
  &#8226;   <a href="#routes">routes</a>
 
   </div>
@@ -16960,7 +16961,7 @@ imported by:
 
 <div class="node">
   <a name="forms"></a>
-  <a target="code" href="///C:/Users/vbatista/Documents/programas_create_by_victor/sistemaAutopartes/sistemaAutoPartes_env/forms.py" type="text/plain"><tt>forms</tt></a>
+  <a target="code" href="///C:/Users/vbatista/Documents/programas_create_by_victor/sistemaAutopartes/sistemaAutopartes_env/forms.py" type="text/plain"><tt>forms</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
     <a href="#flask_wtf">flask_wtf</a>
@@ -17105,6 +17106,7 @@ imported by:
  &#8226;   <a href="#platform">platform</a>
  &#8226;   <a href="#pymysql._auth">pymysql._auth</a>
  &#8226;   <a href="#re">re</a>
+ &#8226;   <a href="#routes">routes</a>
  &#8226;   <a href="#setuptools">setuptools</a>
  &#8226;   <a href="#setuptools._discovery">setuptools._discovery</a>
  &#8226;   <a href="#setuptools._distutils._modified">setuptools._distutils._modified</a>
@@ -19968,8 +19970,6 @@ imported by:
  &#8226;   <a href="#PIL.PcxImagePlugin">PIL.PcxImagePlugin</a>
  &#8226;   <a href="#PIL.PngImagePlugin">PIL.PngImagePlugin</a>
  &#8226;   <a href="#PIL.TiffImagePlugin">PIL.TiffImagePlugin</a>
- &#8226;   <a href="#app">app</a>
- &#8226;   <a href="#app.py">app.py</a>
  &#8226;   <a href="#asyncio.futures">asyncio.futures</a>
  &#8226;   <a href="#asyncio.log">asyncio.log</a>
  &#8226;   <a href="#barcode.writer">barcode.writer</a>
@@ -20214,7 +20214,7 @@ imported by:
 
 <div class="node">
   <a name="models"></a>
-  <a target="code" href="///C:/Users/vbatista/Documents/programas_create_by_victor/sistemaAutopartes/sistemaAutoPartes_env/models.py" type="text/plain"><tt>models</tt></a>
+  <a target="code" href="///C:/Users/vbatista/Documents/programas_create_by_victor/sistemaAutopartes/sistemaAutopartes_env/models.py" type="text/plain"><tt>models</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
     <a href="#app">app</a>
@@ -21392,7 +21392,6 @@ imported by:
  &#8226;   <a href="#_aix_support">_aix_support</a>
  &#8226;   <a href="#_distutils_hack">_distutils_hack</a>
  &#8226;   <a href="#_sitebuiltins">_sitebuiltins</a>
- &#8226;   <a href="#app">app</a>
  &#8226;   <a href="#app.py">app.py</a>
  &#8226;   <a href="#argparse">argparse</a>
  &#8226;   <a href="#asyncio.base_events">asyncio.base_events</a>
@@ -21404,7 +21403,6 @@ imported by:
  &#8226;   <a href="#asyncio.windows_utils">asyncio.windows_utils</a>
  &#8226;   <a href="#barcode">barcode</a>
  &#8226;   <a href="#barcode.writer">barcode.writer</a>
- &#8226;   <a href="#barcode_utils">barcode_utils</a>
  &#8226;   <a href="#bz2">bz2</a>
  &#8226;   <a href="#charset_normalizer.api">charset_normalizer.api</a>
  &#8226;   <a href="#click._compat">click._compat</a>
@@ -23807,11 +23805,10 @@ imported by:
 
 <div class="node">
   <a name="routes"></a>
-  <a target="code" href="///C:/Users/vbatista/Documents/programas_create_by_victor/sistemaAutopartes/sistemaAutoPartes_env/routes.py" type="text/plain"><tt>routes</tt></a>
+  <a target="code" href="///C:/Users/vbatista/Documents/programas_create_by_victor/sistemaAutopartes/sistemaAutopartes_env/routes.py" type="text/plain"><tt>routes</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
     <a href="#app">app</a>
- &#8226;   <a href="#barcode">barcode</a>
  &#8226;   <a href="#barcode.writer">barcode.writer</a>
  &#8226;   <a href="#barcode_utils">barcode_utils</a>
  &#8226;   <a href="#base64">base64</a>
@@ -23821,6 +23818,7 @@ imports:
  &#8226;   <a href="#flask">flask</a>
  &#8226;   <a href="#flask_login">flask_login</a>
  &#8226;   <a href="#forms">forms</a>
+ &#8226;   <a href="#functools">functools</a>
  &#8226;   <a href="#io">io</a>
  &#8226;   <a href="#json">json</a>
  &#8226;   <a href="#models">models</a>

@@ -2,9 +2,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
-import os
-#logging funciona para el DEBUG EN ESTE CASO DE SQLALCHEMY
-import logging
 
 
 #logging.basicConfig()
@@ -38,4 +35,6 @@ with app.app_context():
     db.create_all()
     
     if __name__=='__main__':
-        app.run(debug=True) # debug=True para desarrollo, cambiar a False en producción
+        app.run(debug=False) # debug=True para desarrollo, cambiar a False en producción
+        
+        

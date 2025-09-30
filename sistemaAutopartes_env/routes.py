@@ -1,7 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from app import app, db
 from config import *
-from models import Producto, Categoria, PiezaGenerica ,Proveedor, Cliente, Compra, DetalleCompra, Venta, DetalleVenta, Marca, Modelo, TasaCambio, Role, User, ActivityLog
 from forms import ProductoForm, DetalleCompraForm,CompraForm, ProveedorForm , CompraForm, VentaForm, ClienteForm, ProveedorForm, DetalleVentaForm , LoginForm, RegistrationForm # Tus formularios
 from barcode_utils import generar_codigo_barras_base64 # Tu función de código de barras
 from sqlalchemy import func, desc, and_ # Para usar funciones SQL como SUM
@@ -16,9 +15,9 @@ from datetime import date
 from wtforms import ValidationError
 import io
 import base64
-import barcode
+from functools import wraps
 from barcode.writer import ImageWriter
-from models import TasaCambio
+
 from flask_login import login_user, login_required, logout_user, current_user, LoginManager, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -29,7 +28,21 @@ login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(user_id):
+    #Importacion local para evitar circularidad
+    from models import User
     return User.query.get(int(user_id))
+
+# --- Decorador de roles para restringir acceso ---
+def role_required(role_name):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if not current_user.is_authenticated or current_user.role.name != role_name:
+                flash("No tienes permiso para acceder a esta página.", "danger")
+                return redirect(url_for('index'))
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 @app.route('/')
 @login_required
@@ -38,6 +51,8 @@ def index():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    #Importacion local para evitar el error de circularidad
+    from models import User, Role
     #Autenticacion del usuario
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
@@ -66,6 +81,7 @@ def register():
         try:
             db.session.add(new_user)
             db.session.commit()
+            log_activity(action = "Nuevo usuario registrado", details=f"Usuario:{form.username}")
             flash('¡Registro exitoso! Por favor, inicia sesión.', 'success')
             return redirect(url_for('login'))
         except Exception as e:
@@ -75,6 +91,8 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    #Importacion local para evitar el error de circularidad
+    from models import User
     #Autenticacion del usuario
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
@@ -84,6 +102,7 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user and check_password_hash(user.password_hash, form.password.data):
             login_user(user, remember=form.remember_me.data)
+            log_activity(action="Inicio de sesion exitoso", details=f"Usuario: {form.username}")
             flash('¡Has iniciado sesión exitosamente!', 'success')
             next_page = request.args.get('next')
             return redirect(next_page or url_for('dashboard'))
@@ -95,12 +114,14 @@ def login():
 @login_required
 def logout():
     """Ruta para cerrar sesión."""
+    log_activity(action="Sesion cerrada Exitosamente")
     logout_user()
     flash('Has cerrado sesión.', 'info')
     return redirect(url_for('index'))
 
 
 def obtener_tasas_ultimos_30_dias():
+    from models import TasaCambio
     """
     Función que consulta la base de datos para obtener las tasas de cambio
     de los últimos 30 días.
@@ -122,6 +143,8 @@ def obtener_tasas_ultimos_30_dias():
 
 # --- Función de ayuda para registrar actividades ---
 def log_activity(action, details=None):
+    # Importacion local para evitar el error de circularidad
+    from models import ActivityLog
     """
     Registra una acción del usuario en la base de datos.
     
@@ -137,6 +160,8 @@ def log_activity(action, details=None):
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    # Importacion local para evitar el error de circularidad
+    from models import Venta, Compra, DetalleCompra, Producto, DetalleVenta, Marca, Modelo
     # --- Lógica para el filtro de tiempo ---
     # Obtener las fechas del formulario (si existen)
     start_date_str = request.args.get('start_date')
@@ -390,6 +415,8 @@ def api_consulta():
 @app.route('/productos')
 @login_required
 def listar_productos():
+    # Importar de manera local para evitar el error de circularidad
+    from models import Producto
     """
     Muestra una lista de todos los productos activos.
     """
@@ -400,12 +427,16 @@ def listar_productos():
 # --- Nueva Ruta API para Obtener Categoria & Piezas ---
 @app.route('/api/categoria_de_pieza/', methods=['GET'])
 def get_categoria_de_pieza():
+    # Importar de manera local para evitar el error de circularidad
+    from models import Categoria
     categorias = Categoria.query.order_by(Categoria.nombre).all()
     categoria_data = [{'id': categoria.id, 'nombre': categoria.nombre} for categoria in categorias]
     return jsonify(categoria_data)
 
 @app.route('/api/piezas_por_categoria/<int:categoria_id>', methods=['GET'])
 def get_piezas_por_categoria(categoria_id):
+    #Importar de manera local para evitar el error de circularidad
+    from models import PiezaGenerica
     piezas = PiezaGenerica.query.filter_by(id_categoria=categoria_id).order_by(PiezaGenerica.nombre).all()
     piezas_data = [{'id': p.id, 'nombre': p.nombre} for p in piezas]
     return jsonify(piezas_data)
@@ -413,6 +444,8 @@ def get_piezas_por_categoria(categoria_id):
 # --- FIN Rutas para Categoria & Pieza ---
 @app.route('/api/marcas_vehiculo/', methods=['GET'])
 def get_marcas_vehiculo():
+    #Importar de manera local para evitar el error de circularidad
+    from models import Marca
     marcas = Marca.query.order_by(Marca.nombre).all()
     marca_data = [{'id': marca.id, 'nombre': marca.nombre} for marca in marcas]
     return jsonify(marca_data)
@@ -420,6 +453,8 @@ def get_marcas_vehiculo():
 # --- Nueva Ruta API para Obtener Modelos por Marca ---
 @app.route('/api/modelos_por_marca/<int:marca_id>', methods=['GET'])
 def get_modelos_por_marca(marca_id):
+    #Importar de manera local para evitar el error de circularidad
+    from models import Modelo
     modelos = Modelo.query.filter_by(id_marca=marca_id).order_by(Modelo.nombre).all()
     modelos_data = [{'id': modelo.id, 'nombre': modelo.nombre} for modelo in modelos]
     return jsonify(modelos_data)
@@ -429,6 +464,8 @@ def get_modelos_por_marca(marca_id):
 # ** when u need to call a fetch from frontend the way u have to do is this /api/productos_filtrados?${variable with a value into her}
 @app.route('/api/productos_filtrados', methods=['GET'])
 def get_productos_filtrados():
+    #Importar de manera local para evitar el error de circularidad
+    from models import Producto
     # Obtener los parámetros de la URL
     marca_id = request.args.get('marca_id', type=int)
     modelo_id = request.args.get('modelo_id', type=int)
@@ -480,6 +517,8 @@ def get_productos_filtrados():
 @app.route('/productos/crear', methods=['GET', 'POST'])
 @login_required
 def crear_producto():
+    #Importar de manera local para evitar el error de circularidad
+    from models import Categoria, Marca, PiezaGenerica, Modelo, Producto
     form = ProductoForm()
 
     # --- Populate choices for ALL SelectFields initially (GET and POST) ---
@@ -554,6 +593,8 @@ def crear_producto():
 @app.route('/productos/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_producto(id):
+    #Importar de manera local para evitar el error de circularidad
+    from models import Producto, Categoria, Marca, PiezaGenerica, Modelo
     producto = Producto.query.filter_by(id=id).first_or_404()
     form = ProductoForm(obj=producto) # WTForms loads product data into form fields
 
@@ -657,7 +698,11 @@ def eliminar_producto(id):
     # **Realiza una eliminacion logica (soft deletion) de un producto.En lugar de eliminar la fila, actualiza el campo 'is_active' a False.
     
     try:
+        #Importar de manera local para evitar el error de circularidad
+        from models import Producto
+        
         producto = Producto.query.filter_by(id=id).first_or_404()
+        form = ProductoForm()
         if producto:
             # Eliminar logicamente el producto
             producto.is_active=False
@@ -677,6 +722,8 @@ def eliminar_producto(id):
 @app.route('/proveedores/crear', methods=['GET', 'POST'])
 @login_required
 def crear_proveedor():
+    #Importar de manera local para evitar el error de circularidad
+    from models import Proveedor
     form = ProveedorForm()
     if form.validate_on_submit():
         nuevo_proveedor = Proveedor(
@@ -697,12 +744,16 @@ def crear_proveedor():
 @app.route('/proveedores')
 @login_required
 def listar_proveedores():
+    #Importar de manera local para evitar el error de circularidad
+    from models import Proveedor
     proveedores = Proveedor.query.all()
     return render_template('proveedores/listar.html', proveedores=proveedores)
 
 @app.route('/proveedores/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_proveedor(id):
+    #Importar de manera local para evitar el error de circularidad
+    from models import Proveedor
     #** Object.query.filter_by(id=id) is the way to acces from id of a object
     proveedor = Proveedor.query.filter_by(id=id).first_or_404()
     form = ProveedorForm(obj=proveedor) #Carga los datos existentes en el formulario
@@ -710,16 +761,22 @@ def editar_proveedor(id):
     if form.validate_on_submit():
         form.populate_obj(proveedor)#Actualiza el objeto con los datos del formulario
         db.session.commit()
+        log_activity(action="Proveedor Editado", details=f"Nombre Proveedor: {form.nombre.data}")
         flash('Proveedor actualizado exitosamente.', 'success')
         return redirect(url_for('listar_proveedores'))
     return render_template('proveedores/editar.html', form=form, proveedor=proveedor)
 
 @app.route('/proveedores/eliminar/<int:id>', methods=['POST'])
 def eliminar_proveedor(id):
+    #Importar de manera local para evitar el error de circularidad
+    from models import Proveedor
+    
     proveedor=Proveedor.query.filter_by(id=id).first_or_404()
+    form = ProveedorForm()
     try:
         db.session.delete(proveedor)
         db.session.commit()
+        log_activity(action="Eliminar Proveedor", details=f"Nombre Proveedor: {form.nombre.data}")
         flash('Proveedor eliminado exitosamente.', 'success')
     except Exception as e:
         db.session.rollback()
@@ -729,8 +786,10 @@ def eliminar_proveedor(id):
 @app.route('/compras/crear', methods=['GET', 'POST'])
 @login_required
 def crear_compra():
-    form = CompraForm()
+    #Importar de manera local para evitar el error de circularidad
+    from models import Proveedor, Producto, TasaCambio, Compra, DetalleCompra
     
+    form = CompraForm()
     # --- DEBUG: Comprobación inicial de la solicitud ---
     print(f"\n--- INICIO DE CREAR_COMPRA ---")
     print(f"DEBUG: Método de la solicitud: {request.method}")
@@ -921,16 +980,23 @@ def crear_compra():
 @app.route('/compras')
 @login_required
 def listar_compras():
+    #Importar de manera local para evitar el error de circularidad
+    from models import Compra
+    
     compras = Compra.query.order_by(Compra.fecha_compra.desc()).all()
     return render_template('compras/listar.html', compras=compras)
 
 @app.route('/compras/<int:compra_id>')
 def ver_detalle_compra(compra_id):
+    #Importar de manera local para evitar el error de circularidad
+    from models import Compra
     compra=Compra.query.filter_by(id=compra_id).first_or_404()
     return render_template('compras/detalle.html', compra=compra)
 
 @app.route('/compras/imprimir_codigos/<int:compra_id>')
 def imprimir_codigos_productos(compra_id):
+    #Importar de manera local para evitar el error de circularidad
+    from models import Compra, DetalleCompra
     """
     Muestra una página con códigos de barras listos para imprimir.
     Obtiene los productos de una compra específica.
@@ -959,62 +1025,12 @@ def imprimir_codigos_productos(compra_id):
         generar_codigo_barras_base64=generar_codigo_barras_base64
     )
 
-### Rutas para compras
-"""
-Inicialización del Formulario y Opciones:
-
-form = CompraForm(): Crea una instancia del formulario.
-
-form.proveedor_id.choices = ...: Aquí es crucial. Llenamos las opciones del SelectField de proveedor con datos de la base de datos. (p.id, p.nombre) es el formato (valor, etiqueta).
-
-for detalle_form in form.productos_comprados:: Como productos_comprados es un FieldList de DetalleCompraForm, necesitamos iterar sobre cada sub-formulario y también llenar sus producto_id.choices.
-
-Manejo de "sin proveedores/productos": Se añaden flash messages y redirecciones si no hay proveedores o productos para evitar errores.
-
-if form.validate_on_submit():: Esto se ejecuta cuando el formulario se envía (POST) y pasa todas las validaciones de WTForms.
-
-Validación de Duplicados y Cantidad: Se agrega una validación manual para evitar agregar el mismo producto dos veces en una compra y asegurar que la cantidad sea positiva.
-
-total_compra = 0: Inicializa una variable para sumar el total de la compra.
-
-Recorrido de productos_comprados: Iteramos sobre cada DetalleCompraForm (cada producto añadido a la compra).
-
-producto = Producto.query.get(item_form.producto_id.data): Recupera el objeto Producto real de la base de datos usando el ID seleccionado.
-
-Calculamos el total_compra.
-
-Guardamos los datos de cada ítem en una lista productos_para_agregar para procesarlos después de crear la Compra principal.
-
-Crear Compra:
-
-nueva_compra = Compra(...): Crea la instancia de la compra.
-
-db.session.add(nueva_compra): La añade a la sesión.
-
-db.session.flush(): ¡Importante! flush() le dice a SQLAlchemy que envíe los cambios pendientes a la base de datos pero sin hacer un commit definitivo todavía. Esto es para que nueva_compra.id (el ID de la compra recién creada) esté disponible para ser usado en los DetalleCompra que se crearán a continuación. Sin flush(), nueva_compra.id sería None.
-
-Crear DetalleCompra y Actualizar Stock:
-
-Iteramos sobre productos_para_agregar.
-
-detalle = DetalleCompra(...): Creamos cada detalle de compra, enlazándolo con nueva_compra.id.
-
-db.session.add(detalle): Añade el detalle a la sesión.
-
-item_data['producto'].stock += item_data['cantidad']: ¡Esto es clave! Actualiza el stock del Producto directamente en la instancia que recuperamos.
-
-db.session.add(item_data['producto']): Esto le indica a SQLAlchemy que este objeto Producto ha sido modificado y necesita ser actualizado en la base de datos.
-
-db.session.commit(): Finalmente, se guardan todos los cambios (la nueva Compra, todos los DetalleCompra y las actualizaciones de stock de los Productos) de forma transaccional. Si algo falla antes del commit, todo se revierte.
-
-Mensaje Flash y Redirección: Informa al usuario y lo lleva a la lista de compras
-"""
-# ... Más rutas para editar, eliminar productos, gestionar compras, ventas, clientes, etc.
-
 ### Rutas para Clientes
 @app.route('/clientes/crear', methods=['GET', 'POST'])
 @login_required
 def crear_cliente():
+    #Importar de manera local para evitar el error de circularidad
+    from models import Cliente
     form=ClienteForm()
     if form.validate_on_submit():
         nuevo_cliente = Cliente(
@@ -1029,25 +1045,31 @@ def crear_cliente():
         db.session.commit()
         # --- Registrar la actividad de creación de producto ---
         log_activity(action="Cliente creado", details=f"Producto: {form.cedula_rif.data}")
-        flash('Cliente creado Exitosamente.' 'success')#Se asume que habra una ruta para listar los clientes
+        flash('Cliente creado Exitosamente.', 'success')#Se asume que habra una ruta para listar los clientes
         return redirect(url_for('listar_clientes'))
     return render_template('clientes/crear.html', form=form)
 
 @app.route('/clientes')
 @login_required
 def listar_clientes():
+    #Importar de manera local para evitar el error de circularidad
+    from models import Cliente
+    
     clientes = Cliente.query.all()
     return render_template('clientes/listar.html', clientes=clientes)
 
 @app.route('/clientes/editar/<int:id>', methods=['GET','POST'])
 def editar_cliente(id):
+    #Importar de manera local para evitar el error de circularidad
+    from models import Cliente
+    
     cliente = Cliente.query.filter_by(id=id).first_or_404()
     form = ClienteForm(obj=cliente) #Carga los datos existentes en el formulario
     
     if form.validate_on_submit():
         form.populate_obj(cliente)#Actualiza el objeto con los datos del formulario
         db.session.commit()
-        log_activity(action="Cliente Editado", details=f"Producto: {form.cedula_rif.data}")
+        log_activity(action="Cliente Editado", details=f"C.I o RIF: {form.cedula_rif.data}")
         flash('Cliente actualizado exitosamente.', 'success')
         return redirect(url_for('listar_clientes'))
     return render_template('clientes/editar.html', form=form, cliente=cliente)
@@ -1055,11 +1077,14 @@ def editar_cliente(id):
 
 @app.route('/clientes/eliminar/<int:id>', methods=['GET'])
 def eliminar_cliente(id):
+    #Importar de manera local para evitar el error de circularidad
+    from models import Cliente
     cliente = Cliente.query.filter_by(id=id).first_or_404()
+    form = ClienteForm()
     try:
         db.session.delete(cliente)
         db.session.commit()
-        log_activity(action="Cliente eliminado", details=f"Producto: {form.cedula_rif.data}")
+        log_activity(action="Cliente eliminado", details=f"C.I o RIF: {form.cedula_rif.data}")
         flash('Cliente eliminado exitosamente.', 'success')
     except Exception as e:
         db.session.rollback()
@@ -1118,6 +1143,8 @@ def obtener_tasa_bcv(moneda_origen):
 
 @app.route('/ventas/crear', methods=['GET','POST'])
 def crear_venta():
+    #Importar de manera local para evitar el error de circularidad
+    from models import Cliente, Producto, Venta, DetalleVenta, TasaCambio
     form = VentaForm()
 
     # LLenar las opciones del SelectField para clientes
@@ -1254,7 +1281,7 @@ def crear_venta():
         
         try:
             db.session.commit()
-            log_activity(action="Venta creada", details=f"Producto: {form.cliente_id.data}")
+            log_activity(action="Venta creada", details=f"ID del Cliente: {form.cliente_id.data}")
             flash(f"Venta registrada exitosamente. Nota de Entrega N°: {numero_nota_entrega}. Total: {total_venta_bs} Bs.", 'success')
             return redirect(url_for('listar_ventas'))
         except Exception as e:
@@ -1274,11 +1301,15 @@ def crear_venta():
 @app.route('/ventas')
 @login_required
 def listar_ventas():
+    #Importar de manera local para evitar el error de circularidad
+    from models import Venta
     ventas = Venta.query.order_by(Venta.fecha_venta.desc()).all()
     return render_template('ventas/listar.html', ventas=ventas)
 
 @app.route('/ventas/<int:venta_id>')
 def ver_detalle_venta(venta_id):
+    #Importar de manera local para evitar el error de circularidad
+    from models import Venta
     venta= Venta.query.filter_by(id=venta_id).first_or_404()
     return render_template('ventas/detalle.html', venta=venta)
 

@@ -3,6 +3,13 @@
 {% block title %}Editar Cliente{% endblock %}
 
 {% block content %}
+
+<style>
+    .form-label{
+        color:#fff2d1;
+    }
+</style>
+
     <h2>Editar Cliente: {{ cliente.nombre }} {{ cliente.apellido }}</h2>
     <form method="POST" action="{{ url_for('editar_cliente', id=cliente.id) }}">
         {{ form.hidden_tag() }}

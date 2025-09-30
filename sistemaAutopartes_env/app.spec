@@ -3,10 +3,14 @@
 
 a = Analysis(
     ['app.py'],
-    pathex=[],
+    pathex=['C:\\Users\\vbatista\\Documents\\programas_create_by_victor\\sistemaAutopartes'],
     binaries=[],
-    datas=[('static', 'static'), ('templates', 'templates'), ('config.py', '.'), ('.env', '.')],
-    hiddenimports=[],
+    datas=[('templates', 'templates'), 
+           ('config.py', '.'),
+           ('static','static'), 
+           ('.env', '.'), 
+           ('barcode_utils.py', '.')],
+    hiddenimports=['barcode.writer', 'PIL'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

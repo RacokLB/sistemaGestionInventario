@@ -14,7 +14,7 @@ class Config:
     # -----------------------------
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    BARCODE_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static', 'barcodes')
+    #BARCODE_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static', 'barcodes')
     # Asegúrate de que el directorio exista
-    if not os.path.exists(BARCODE_DIR):
-        os.makedirs(BARCODE_DIR)
+    #if not os.path.exists(BARCODE_DIR):
+        #os.makedirs(BARCODE_DIR)
