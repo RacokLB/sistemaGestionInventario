@@ -1,0 +1,22 @@
+# Entornos virtuales
+sistemaAutopartes_env/
+venv/
+*.pyc
+
+# Variables de entorno
+.env
+
+# Directorios de compilación de Python
+__pycache__/
+build/
+dist/
+Include/
+Lib/
+Scripts/
+share/
+pyvenv.cfg
+
+# Otros archivos de sistema y control de versiones
+.git
+.gitignore
+*.log
