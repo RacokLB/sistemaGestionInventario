@@ -316,8 +316,9 @@ def consultar_piezas():
 # --- Configuración de la API de Gemini ---
 # IMPORTANTE: Reemplaza "" con tu clave de API de Gemini REAL.
 # Para aplicaciones en producción, considera usar variables de entorno
-# para almacenar tu clave de API de forma segura.
-API_KEY = "AIzaSyBzb08WuAJdKbXs1AnQpfDZVBJ7KfVdwP4" # Asegúrate de reemplazar esto con tu clave de API de Gemini REAL.
+# LEYENDO LA CLAVE DESDE EL ENTORNO
+import os # Asegúrate de que esta línea esté al inicio del archivo si no está
+API_KEY = os.environ.get('GEMINI_API_KEY', 'CLAVE_DE_PRUEBA_LOCAL_SI_ES_NECESARIO')
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent"
 
 # --- Configuración para retroceso exponencial ---
