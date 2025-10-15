@@ -297,7 +297,7 @@
 
                 $('#no-productos-msg').hide();
                 
-                // --- SOLUCIÓN PARA EL TOKEN CSRF FALTANTE ---
+                
                 // 1. Obtener el token CSRF del formulario principal
                 const csrfToken = $('input[name="csrf_token"]').val();
                 
@@ -424,7 +424,7 @@
                 productosContainer.html('<div class="alert alert-info">Cargando productos...</div>');
                 console.log(`valores enviados al backend para el filtrado: MarcaId ${selectedMarcaId}, ModeloId ${selectedModeloId}, PiezaId ${selectedPieza}, CategoriaId ${selectedCategoria} `)
                 
-                // Corregido: Activar la búsqueda si al menos un filtro principal tiene un valor
+                // Activar la búsqueda si al menos un filtro principal tiene un valor
                 if (selectedMarcaId || selectedModeloId || selectedCategoria || selectedPieza) { 
                     fetchProductosFiltrados(selectedMarcaId, selectedModeloId, selectedCategoria, selectedPieza); 
                     console.log(`check it before sending ${selectedPieza}`)
@@ -438,8 +438,8 @@
             var tasaCambioCompra = document.getElementById('tasa_cambio_actual');
 
             if (monedaCompraSelect && tasaCambioCompra) {
-                // Get rates from data attributes on the body (or other suitable element)
-                // Use document.querySelector('body') if you added data attributes to <body>
+               
+                // Use document.querySelector('body') if added data attributes to <body>
                 var usdRate = parseFloat(document.body.dataset.usdRate || '0');
                 
                 var eurRate = parseFloat(document.body.dataset.eurRate || '0');
