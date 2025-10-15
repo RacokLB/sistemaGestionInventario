@@ -34,7 +34,7 @@
                 <td>Bs. {{ "%.2f" % venta.total_venta_bs }}</td> {# Muestra el total en Bolívar #}
                 <td>{{ venta.numero_nota_entrega }}</td> {# Usamos el campo correcto 'numero_nota_entrega' #}
                 <td>
-                    {# Puedes añadir un enlace para ver el detalle de la nota de entrega #}
+                   
                     <a href="{{ url_for('ver_detalle_venta', venta_id=venta.id) }}" class="btn btn-sm btn-info">Ver Detalle</a>
                     {# Opcional: <a href="{{ url_for('editar_venta', venta_id=venta.id) }}" class="btn btn-sm btn-warning">Editar</a> #}
                     {# Opcional: <a href="{{ url_for('eliminar_venta', venta_id=venta.id) }}" class="btn btn-sm btn-danger">Eliminar</a> #}
