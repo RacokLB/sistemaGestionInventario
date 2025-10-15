@@ -30,11 +30,11 @@ from routes import *
 
 # Para inicializar la base de datos y crear las tablas
 # Esto solo se ejecuta si el script se corre directamente
-# y es crucial para crear las tablas en MySQL la primera vez.
+# y es crucial para crear las tablas la primera vez.
 with app.app_context():
     db.create_all()
     
     if __name__=='__main__':
-        app.run(debug=False) # debug=True para desarrollo, cambiar a False en producción
+        app.run(debug=False) 
         
         
