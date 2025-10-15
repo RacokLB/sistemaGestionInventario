@@ -54,7 +54,7 @@ class ProductoForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(ProductoForm, self).__init__(*args, **kwargs)
         from models import Categoria, Marca # Mover la importación aquí
-        # Populate choices for primary fields here
+        
         self.categoria_id.choices = [(c.id, c.nombre) for c in Categoria.query.order_by('nombre').all()]
         self.categoria_id.choices.insert(0, (0, 'Selecciona una categoría'))
 
@@ -68,10 +68,9 @@ class ProductoForm(FlaskForm):
 
 
 # --- Sub-formulario para cada detalle de producto en la compra ---
-# Este formulario debe coincidir con los campos que generas dinámicamente en el frontend
 class DetalleCompraForm(FlaskForm):
-    # producto_id es el ID del producto existente en tu base de datos
-    # Corregido: Debe ser IntegerField o HiddenField para coincidir con el input hidden del frontend
+    # producto_id es el ID del producto existente en la base de datos
+    
     producto_id = IntegerField('ID Producto', validators=[DataRequired()])
     
     # Es crucial que este campo exista para capturar la marca_repuesto
@@ -81,8 +80,7 @@ class DetalleCompraForm(FlaskForm):
     cantidad = IntegerField('Cantidad', validators=[DataRequired(), NumberRange(min=1, message="La cantidad debe ser al menos 1.")])
     precio_adquisicion = DecimalField('Precio Adquisición', validators=[DataRequired(), NumberRange(min=0.01, message="El precio de adquisición debe ser mayor a 0.")])
     
-    # Opcional: Un botón para eliminar un item del formulario si usas Javascript
-    # Si la eliminación se maneja completamente con JS en el frontend, este campo no es estrictamente necesario para el backend.
+    
     delete_item = SubmitField('Eliminar')
     
 # --- Formulario principal de Compra ---
@@ -140,7 +138,7 @@ class DetalleVentaForm(FlaskForm):
     cantidad = IntegerField('Cantidad', validators=[DataRequired(), NumberRange(min=1, message='Debe ser mayor a 1 producto')])
     
     #No necesitamos precio_venta_unitario aqui, lo tomaremos del Producto.precio_venta al momento de la venta
-    #Si quieres permitir un precio de venta diferente al predefinido, se agregaria aqui
+    #Si se quiere agregar un precio de venta diferente al predefinido, se agregaria aqui
     
 #--- Formulario principal de Venta ---
 class VentaForm(FlaskForm):
@@ -149,7 +147,7 @@ class VentaForm(FlaskForm):
     # Nuevo campo para seleccionar la moneda de la venta
     moneda_venta = SelectField('Moneda de Venta', choices=[('USD', 'USD - Dólar'), ('EUR', 'EUR - Euro')], validators=[DataRequired()])
 
-    # Campo para mostrar la tasa de cambio actual (solo lectura, se llenará en JS o Python)
+    # Campo para mostrar la tasa de cambio actual (solo lectura, se llenará en JS)
     # Podría ser un HiddenField o un StringField read-only si quieres mostrarlo
     tasa_cambio_actual = DecimalField('Tasa de Cambio BCV (Bs. por 1 USD/EUR)', render_kw={'readonly': True}, places=4)
 
