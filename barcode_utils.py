@@ -1,6 +1,5 @@
-# Solución definitiva para el error de fuente y el código de barras.
+
 # Genera el código de barras manualmente con la librería Pillow (PIL)
-# para evitar problemas de dependencias.
 
 import io
 import base64
@@ -35,7 +34,7 @@ def generar_codigo_barras_base64(valor):
         dibujo = ImageDraw.Draw(imagen)
         
         # Definir el mapeo de los dígitos a barras (módulo EAN-13)
-        # Esto es solo una simplificación, la lógica real es más compleja
+     
         digitos_a_barras = {
             '0': '0001101', '1': '0011001', '2': '0010011', '3': '0111101',
             '4': '0100011', '5': '0110001', '6': '0101111', '7': '0111011',
@@ -74,6 +73,5 @@ def generar_codigo_barras_base64(valor):
         return imagen_base64
 
     except Exception as e:
-        # Imprimir el error para depuración y devolver una cadena vacía
         print(f"Error al generar el código de barras: {e}")
         return ""
