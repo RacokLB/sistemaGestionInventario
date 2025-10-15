@@ -44,7 +44,7 @@
         <tbody>
             {% for detalle in venta.detalles %}
             <tr>
-                {# Asegúrate de que detalle.producto_id.descripcion sea correcto. Si producto_id es la FK, necesitas acceder al objeto Producto real: detalle.producto.descripcion #}
+                {# Asegúrar que detalle.producto_id.descripcion sea correcto. Si producto_id es la FK, acceder al objeto Producto real: detalle.producto.descripcion #
                 <td>{{ detalle.detalle_ventas.descripcion }}</td> 
                 <td>{{ detalle.cantidad }}</td>
                 <td>{{ "%.2f" % detalle.precio_venta_unitario }} {{ venta.moneda_total_divisa }}</td> {# Muestra el precio unitario en la divisa original #}
