@@ -1,4 +1,4 @@
-from app import db # Importa la instancia de SQLAlchemy desde tu app.py
+from app import db # Importa la instancia de SQLAlchemy desde app.py
 import datetime
 from datetime import *
 from flask_login import UserMixin
@@ -85,28 +85,28 @@ class Modelo(db.Model):
     nombre = db.Column(db.String(100), nullable=False)
 
     def __repr__(self):
-        return f"<Modelo {self.nombre} (Marca: {self.marca.nombre})>" # Corrección: self.marca.nombre
+        return f"<Modelo {self.nombre} (Marca: {self.marca.nombre})>" 
 
 class Categoria(db.Model):
-    __tablename__ = 'categorias' # **CAMBIADO a plural**
+    __tablename__ = 'categorias' # Nombre de tabla en plural
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False, unique=True)
 
-    # **CAMBIADO**: 'piezas_genericas' para reflejar el modelo PiezaGenerica
+    
     piezas_genericas = db.relationship('PiezaGenerica', backref='categoria_pieza', lazy=True) 
 
     def __repr__(self):
         return f"<Categoria {self.nombre}>"
     
-class PiezaGenerica(db.Model): # **CAMBIADO: Nombre del modelo a PiezaGenerica**
-    __tablename__ = 'piezas_genericas' # **CAMBIADO a plural**
+class PiezaGenerica(db.Model):
+    __tablename__ = 'piezas_genericas' # **Nombre de tabla en plural**
     id = db.Column(db.Integer, primary_key=True)
-    # FK a la nueva tabla 'categorias' (asumiendo que Categoria se llama 'categorias')
+    
     id_categoria = db.Column(db.Integer, db.ForeignKey('categorias.id'), nullable=False) 
     nombre = db.Column(db.String(200), nullable=False)
 
     def __repr__(self):
-        # **CAMBIADO**: Acceso a la relación a través de 'categoria_pieza' (backref)
+        
         return f"<PiezaGenerica {self.nombre} (Categoría: {self.categoria_pieza.nombre})>"
 
 
@@ -119,10 +119,10 @@ class Producto(db.Model):
 
     # --- CAMPOS Y RELACIONES PARA CATEGORIA Y PIEZA GENERAL ---
     categoria_id = db.Column(db.Integer, db.ForeignKey('categorias.id'), nullable=False) # **FK a 'categorias'**
-    pieza_generica_id = db.Column(db.Integer, db.ForeignKey('piezas_genericas.id'), nullable=False) # **CAMBIADO a pieza_generica_id y FK a 'piezas_genericas'**
+    pieza_generica_id = db.Column(db.Integer, db.ForeignKey('piezas_genericas.id'), nullable=False)
     
     # Relaciones para acceder a los objetos Categoria y PiezaGenerica
-    # **CAMBIADO: nombres de relaciones a singular y backrefs únicos**
+    
     categoria_rel = db.relationship('Categoria', backref='productos_por_categoria', lazy=True)
     pieza_generica_rel = db.relationship('PiezaGenerica', backref='productos_por_pieza_generica', lazy=True)
     # --- FIN NUEVOS CAMPOS Y RELACIONES ---
@@ -145,10 +145,10 @@ class Producto(db.Model):
     fecha_registro = db.Column(db.DateTime, default=db.func.current_timestamp())
     is_active=db.Column(db.Boolean, default=True, nullable=False)
     # Relaciones con DetalleCompra y DetalleVenta
-    # AÑADIDO: overlaps="detalle_producto_compra" para resolver el warning
+    
     compras_detalle = db.relationship('DetalleCompra', backref='producto_compra', lazy=True)
-    # AÑADIDO: overlaps="detalle_producto_venta" para resolver el warning
-    ventas_detalle = db.relationship('DetalleVenta', backref='producto_venta', lazy=True)#overlaps = funciona para 
+    
+    ventas_detalle = db.relationship('DetalleVenta', backref='producto_venta', lazy=True)
 
     def __repr__(self):
         return f"<Producto {self.descripcion} - Stock: {self.stock}>"
@@ -172,8 +172,6 @@ class Compra(db.Model):
     fecha_compra = db.Column(db.DateTime, default=db.func.current_timestamp())
     id = db.Column(db.Integer, primary_key=True)
     numero_factura = db.Column(db.String(80), nullable=True)
-    # Asumiendo que proveedor_id es el nombre de la columna en la tabla `compras`
-    # que es una FK a `proveedores.id`
     proveedor_id = db.Column(db.Integer, db.ForeignKey('proveedores.id'), nullable=False) 
     total_compra_divisa = db.Column(db.Numeric(10, 2), nullable=False)
     moneda_total_divisa = db.Column(db.String(3), nullable=False)    # Nuevo: 'USD' o 'EUR'
@@ -194,7 +192,7 @@ class DetalleCompra(db.Model):
     precio_adquisicion = db.Column(db.Numeric(10, 2), nullable=False)
     
     # --- Relacion con el producto ---
-    # AÑADIDO: overlaps="producto_compra" para resolver el warning
+   
     detalle_compras = db.relationship('Producto', viewonly=True, lazy=True, overlaps="producto_compra")
 
     def __repr__(self):
@@ -232,14 +230,14 @@ class Venta(db.Model):
         return f"<Venta {self.id} - Nota de Entrega: {self.numero_nota_entrega}>"
 
 class DetalleVenta(db.Model):
-    __tablename__ = 'detalle_ventas' # **CAMBIADO a plural**
+    __tablename__ = 'detalle_ventas' # Nombre de tabla en plural
     id = db.Column(db.Integer, primary_key=True)
     id_venta = db.Column(db.Integer, db.ForeignKey('ventas.id'), nullable=False)
     producto_id = db.Column(db.Integer, db.ForeignKey('productos.id'), nullable=False)
     cantidad = db.Column(db.Integer, nullable=False)
     precio_venta_unitario = db.Column(db.Numeric(10, 2), nullable=False)
 
-    # AÑADIDO: overlaps="producto_venta" para resolver el warning
+    
     detalle_ventas = db.relationship('Producto', viewonly=True, lazy=True, overlaps="producto_venta")
 
     def __repr__(self):
@@ -253,7 +251,7 @@ class TasaCambio(db.Model):
     tasa = db.Column(db.Numeric(10, 4), nullable=False) # 10 dígitos en total, 4 decimales
     fecha = db.Column(db.Date, default=date.today, nullable=False) # Una tasa por día y moneda_origen
 
-    # Añadir un índice único compuesto si necesitas más de una moneda_origen por día
+    # Añadir un índice único compuesto si se necesita más de una moneda_origen por día
     __table_args__ = (
         db.UniqueConstraint('moneda_origen', 'fecha', name='_moneda_fecha_uc'),
     )
