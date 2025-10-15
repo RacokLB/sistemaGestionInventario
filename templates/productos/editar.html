@@ -89,7 +89,7 @@
                 const modeloVehiculoSelect = $('#id_modelo_vehiculo');
 
                 // Store the initial values from the 'producto' object
-                // You need to get these values from Jinja2 into your JavaScript
+                // We need to get these values from Jinja2 into JavaScript
                 const initialPiezaId = {{ producto.pieza_generica_id | default(0) }}; // Use default(0) for safety
                 const initialModeloVehiculoId = {{ producto.id_modelo_vehiculo | default(0) }}; // Use default(0) for safety
                 console.log(initialPiezaId)
@@ -110,7 +110,7 @@
                         });
                         piezasSelect.prop('disabled',false);
 
-                        // NEW: Pre-select the specific piece if provided
+                        // Pre-select the specific piece if provided
                         if (pieza_to_select) {
                             piezasSelect.val(pieza_to_select);
                             // Ensure the select is enabled if a value was selected
@@ -143,7 +143,7 @@
                         });
                         modeloVehiculoSelect.prop('disabled', false);
 
-                        // NEW: Pre-select the specific model if provided
+                        // Pre-select the specific model if provided
                         if (modelo_to_select) {
                             modeloVehiculoSelect.val(modelo_to_select);
                             // Ensure the select is enabled if a value was selected
