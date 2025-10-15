@@ -28,7 +28,7 @@
                 <td>{{ proveedor.email }}</td>
                 <td>
                     <a href="{{ url_for('editar_proveedor', id=proveedor.id) }}" class="btn btn-sm btn-warning">Editar</a>
-                    {# Añadir un botón de eliminar que posiblemente use un modal o JS para confirmar #}
+                    
                     <a href="{{ url_for('eliminar_proveedor', id=proveedor.id) }}" method="POST" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que quieres eliminar este proveedor?')">Eliminar</a>
                 </td>
             </tr>
