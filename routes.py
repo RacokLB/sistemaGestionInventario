@@ -2,9 +2,8 @@ from flask import render_template, request, redirect, url_for, flash, jsonify
 from app import app, db
 from config import *
 from forms import ProductoForm, DetalleCompraForm,CompraForm, ProveedorForm , CompraForm, VentaForm, ClienteForm, ProveedorForm, DetalleVentaForm , LoginForm, RegistrationForm # Tus formularios
-from barcode_utils import generar_codigo_barras_base64 # Tu función de código de barras
+from barcode_utils import generar_codigo_barras_base64 
 from sqlalchemy import func, desc, and_ # Para usar funciones SQL como SUM
-# Ejemplo conceptual con WeasyPrint (requiere pip install weasyprint)
 from flask import render_template
 from decimal import Decimal, ROUND_HALF_UP
 import json
@@ -17,7 +16,6 @@ import io
 import base64
 from functools import wraps
 from barcode.writer import ImageWriter
-
 from flask_login import login_user, login_required, logout_user, current_user, LoginManager, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -288,6 +286,7 @@ def dashboard():
     tasas_usd_ultimos_30_dias, fechas_ultimos_30_dias = obtener_tasas_ultimos_30_dias()
 
     # Pasa todas las métricas y las tasas a la plantilla, incluyendo las fechas del filtro
+    #NOTA: Se comenta las lineas donde se pasan la tasa y fecha del Eur , porque en esta nueva API que debi utilizar no dan dicha referencia cambiaria, la dejo dentro del codigo porque mas adelante si vuelven a poner en linea la API de pydolar , se puede usar.
     return render_template('dashboard.html',
         total_ventas=f"{total_ventas:.2f}",
         total_compras=f"{total_compras:.2f}",
@@ -820,7 +819,7 @@ def crear_compra():
     print(f"DEBUG: Intentando validar el formulario con form.validate_on_submit()...")
     
     # --- Lógica para obtener y guardar/mostrar la tasa de cambio ---
-    # Sugerencia: Extraer esta lógica a una función aparte para evitar duplicación.
+    
     divisas_a_utilizar = ['USD','EUR']
     tasas_disponibles = {} #Aqui vamos a almacenar las tasas que vamos a utilizar
     
@@ -1002,14 +1001,14 @@ def imprimir_codigos_productos(compra_id):
     Muestra una página con códigos de barras listos para imprimir.
     Obtiene los productos de una compra específica.
     """
-    # 1. Obtener la compra (esto ya lo tenías)
+    # 1. Obtener la compra
     compra = Compra.query.filter_by(id=compra_id).first_or_404()
     
     # 2. Obtener los detalles de esa compra (los productos y cantidades)
     detalles_compra = DetalleCompra.query.filter_by(compra_id=compra.id).all()
     
     # 3. Preparar una lista en el formato que la plantilla necesita
-    # ¡IMPORTANTE! Agrega el objeto completo del producto, no solo las propiedades.
+    
     productos_para_imprimir = []
     for detalle in detalles_compra:
         productos_para_imprimir.append({
@@ -1093,7 +1092,7 @@ def eliminar_cliente(id):
     return redirect(url_for('listar_clientes'))
 
 
-# La función para obtener la tasa del BCV, ahora corregida para siempre devolver una tupla.
+# La función para obtener la tasa del BCV, siempre debe devolver una tupla.
 def obtener_tasa_bcv(moneda_origen):
     """
     Obtiene la tasa de cambio oficial (compra y venta) para una moneda específica (USD o EUR)
